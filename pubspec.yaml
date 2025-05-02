@@ -21,5 +21,18 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
-
   uses-material-design: true
+
+  fonts:
+    - family: WantedSans
+      fonts:
+        - asset: assets/fonts/wanted_sans_extra_bold.ttf
+          weight: 800
+        - asset: assets/fonts/wanted_sans_bold.ttf
+          weight: 700
+        - asset: assets/fonts/wanted_sans_semi_bold.ttf
+          weight: 600
+        - asset: assets/fonts/wanted_sans_medium.ttf
+          weight: 500
+        - asset: assets/fonts/wanted_sans_regular.ttf
+          weight: 400
