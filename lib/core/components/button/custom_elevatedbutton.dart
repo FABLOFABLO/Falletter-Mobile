@@ -3,21 +3,27 @@ import 'package:falletter/core/constants/text_style.dart';
 import 'package:flutter/material.dart';
 
 class CustomElevatedButton extends StatelessWidget {
-  final String text;
+  final String? text;
   final VoidCallback? onPressed;
   final double? height;
   final double? width;
   final Gradient? gradient;
   final Color? textColor;
+  final Widget? content;
+  final Widget? leading;
+  final Widget? trailing;
 
   const CustomElevatedButton({
     super.key,
-    required this.text,
+    this.text,
     this.onPressed,
     this.height,
     this.width,
     this.gradient,
     this.textColor,
+    this.content,
+    this.leading,
+    this.trailing,
   });
 
   @override
@@ -25,7 +31,7 @@ class CustomElevatedButton extends StatelessWidget {
     final bool isEnabled = onPressed != null;
 
     return Container(
-      width: width ?? 310,
+      width: width,
       height: height ?? 52,
       decoration: BoxDecoration(
         gradient:
@@ -46,8 +52,7 @@ class CustomElevatedButton extends StatelessWidget {
           surfaceTintColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
-        child: Text(
-          text,
+        child: DefaultTextStyle(
           style: FalletterTextStyle.button.copyWith(
             color:
                 isEnabled
@@ -55,8 +60,25 @@ class CustomElevatedButton extends StatelessWidget {
                     : FalletterColor.gray900,
           ),
           textAlign: TextAlign.center,
+          child: content ?? _defaultContent(),
         ),
       ),
+    );
+  }
+
+  Widget _defaultContent() {
+    if (text == null && leading == null && trailing == null) {
+      return const Text("Button");
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (leading != null) ...[leading!, const SizedBox(width: 8)],
+        if (text != null) Flexible(child: Text(text!)),
+        if (trailing != null) ...[const SizedBox(width: 8), trailing!],
+      ],
     );
   }
 }
