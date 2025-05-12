@@ -3,27 +3,21 @@ import 'package:falletter/core/constants/text_style.dart';
 import 'package:flutter/material.dart';
 
 class CustomElevatedButton extends StatelessWidget {
-  final String? text;
   final VoidCallback? onPressed;
   final double? height;
   final double? width;
   final Gradient? gradient;
   final Color? textColor;
-  final Widget? content;
-  final Widget? leading;
-  final Widget? trailing;
+  final Widget content;
 
   const CustomElevatedButton({
     super.key,
-    this.text,
     this.onPressed,
     this.height,
     this.width,
     this.gradient,
     this.textColor,
-    this.content,
-    this.leading,
-    this.trailing,
+    required this.content,
   });
 
   @override
@@ -60,25 +54,9 @@ class CustomElevatedButton extends StatelessWidget {
                     : FalletterColor.gray900,
           ),
           textAlign: TextAlign.center,
-          child: content ?? _defaultContent(),
+          child: content,
         ),
       ),
-    );
-  }
-
-  Widget _defaultContent() {
-    if (text == null && leading == null && trailing == null) {
-      return const Text("Button");
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (leading != null) ...[leading!, const SizedBox(width: 8)],
-        if (text != null) Flexible(child: Text(text!)),
-        if (trailing != null) ...[const SizedBox(width: 8), trailing!],
-      ],
     );
   }
 }
