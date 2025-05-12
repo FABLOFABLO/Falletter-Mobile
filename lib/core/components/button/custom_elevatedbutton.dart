@@ -8,7 +8,7 @@ class CustomElevatedButton extends StatelessWidget {
   final double? width;
   final Gradient? gradient;
   final Color? textColor;
-  final Widget content;
+  final Widget child;
 
   const CustomElevatedButton({
     super.key,
@@ -17,7 +17,7 @@ class CustomElevatedButton extends StatelessWidget {
     this.width,
     this.gradient,
     this.textColor,
-    required this.content,
+    required this.child,
   });
 
   @override
@@ -54,7 +54,7 @@ class CustomElevatedButton extends StatelessWidget {
                     : FalletterColor.gray900,
           ),
           textAlign: TextAlign.center,
-          child: content,
+          child: child,
         ),
       ),
     );
