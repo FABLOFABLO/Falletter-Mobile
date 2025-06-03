@@ -2,13 +2,13 @@ import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:falletter/core/components/gradient_icon.dart';
+import 'package:falletter/core/components/flexible_icon.dart';
 
-class FalletterBottomnavigationbar extends StatelessWidget {
+class FalletterBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
-  final Function(int) onTap;
+  final void Function(int) onTap;
 
-  const FalletterBottomnavigationbar({
+  const FalletterBottomNavigationBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
@@ -47,10 +47,9 @@ class FalletterBottomnavigationbar extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       isSelected
-                          ? GradientIcon(
+                          ? FlexibleIcon(
                         icon: _icons[index],
                         gradient: gradient,
-                        size: null,
                         fill: 1,
                       )
                           : Icon(
