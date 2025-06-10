@@ -7,7 +7,6 @@ class SelectButton extends StatelessWidget {
   final double? height;
   final double? width;
   final Widget child;
-  final bool isSelected;
   final bool showOutline;
 
   const SelectButton({
@@ -16,42 +15,30 @@ class SelectButton extends StatelessWidget {
     this.height,
     this.width,
     required this.child,
-    this.isSelected = false,
     this.showOutline = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isOutline = !isSelected && showOutline;
-
-    final textColor = isSelected ? FalletterColor.black : FalletterColor.white;
-
-    final innerDecoration = BoxDecoration(
+    final outlineDecoration = showOutline
+        ? BoxDecoration(
+      gradient: const LinearGradient(
+        colors: FalletterColor.blueGradient,
+      ),
       borderRadius: BorderRadius.circular(8),
-      color: isSelected ? null : FalletterColor.middleBlack,
-      gradient:
-          isSelected
-              ? const LinearGradient(colors: FalletterColor.blueGradient)
-              : null,
-    );
-
-    final outlineDecoration =
-        isOutline
-            ? BoxDecoration(
-              gradient: const LinearGradient(
-                colors: FalletterColor.blueGradient,
-              ),
-              borderRadius: BorderRadius.circular(8),
-            )
-            : null;
+    )
+        : null;
 
     return Container(
       width: width,
       height: height,
       decoration: outlineDecoration,
-      padding: isOutline ? const EdgeInsets.all(2) : null,
+      padding: showOutline ? const EdgeInsets.all(2) : null,
       child: Container(
-        decoration: innerDecoration,
+        decoration: BoxDecoration(
+          color: FalletterColor.middleBlack,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
@@ -65,7 +52,9 @@ class SelectButton extends StatelessWidget {
             ),
           ),
           child: DefaultTextStyle(
-            style: FalletterTextStyle.title3.copyWith(color: textColor),
+            style: FalletterTextStyle.title3.copyWith(
+              color: FalletterColor.white,
+            ),
             child: child,
           ),
         ),
