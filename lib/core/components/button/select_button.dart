@@ -34,7 +34,7 @@ class SelectButton extends StatelessWidget {
       height: height,
       decoration: outlineDecoration,
       padding: showOutline ? const EdgeInsets.all(2) : null,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: FalletterColor.middleBlack,
           borderRadius: BorderRadius.circular(8),
