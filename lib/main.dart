@@ -1,3 +1,5 @@
+import 'package:falletter/core/constants/color.dart';
+import 'package:falletter/core/theme/falletter_theme.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -11,7 +13,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      theme: ThemeData(
+        scaffoldBackgroundColor: FalletterColor.black,
+        inputDecorationTheme: inputDecorationTheme,
+        textSelectionTheme: textSelectionTheme,
+      ),
+      home:
     );
   }
 }
