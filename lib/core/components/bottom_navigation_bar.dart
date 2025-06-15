@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:falletter/core/components/flexible_icon.dart';
 
-class FalletterBottomNavigationBar extends StatelessWidget {
+class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final void Function(int) onTap;
 
-  const FalletterBottomNavigationBar({
+  const CustomBottomNavigationBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
