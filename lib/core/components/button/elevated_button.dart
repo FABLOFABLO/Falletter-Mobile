@@ -51,7 +51,7 @@ class CustomElevatedButton extends StatelessWidget {
             color:
                 isEnabled
                     ? (textColor ?? FalletterColor.middleBlack)
-                    : FalletterColor.gray900,
+                    : FalletterColor.gray500,
           ),
           textAlign: TextAlign.center,
           child: child,
