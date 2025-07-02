@@ -55,82 +55,60 @@ class _GenderPageState extends State<GenderPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: GenderButton(
-                              label: '남성',
-                              icon: Symbols.man,
-                              iconColor: FalletterColor.blueGradient[0],
-                              isSelected: selected == '남성',
-                              onTap: () => setState(() => selected = '남성'),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: GenderButton(
-                              label: '여성',
-                              icon: Symbols.woman,
-                              iconColor: FalletterColor.pinkGradient[0],
-                              isSelected: selected == '여성',
-                              onTap: () => setState(() => selected = '여성'),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: GenderButton(
-                            label: '기타',
-                            iconColor: FalletterColor.gray100,
-                            isSelected: selected == '기타',
-                            onTap: () => setState(() => selected = '기타'),
-                            iconWidget: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Symbols.man,
-                                  color: FalletterColor.gray100,
-                                  size: 50,
-                                ),
-                                Icon(
-                                  Symbols.woman,
-                                  color: FalletterColor.gray100,
-                                  size: 50,
-                                ),
-                              ],
-                            ),
-                          ),
+                        child: GenderButton(
+                          label: '남성',
+                          icon: Symbols.man,
+                          iconColor: FalletterColor.blueGradient[0],
+                          isSelected: selected == '남성',
+                          onTap: () => setState(() => selected = '남성'),
                         ),
                       ),
+                      const SizedBox(width: 20),
                       Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Container(),
+                        child: GenderButton(
+                          label: '여성',
+                          icon: Symbols.woman,
+                          iconColor: FalletterColor.pinkGradient[0],
+                          isSelected: selected == '여성',
+                          onTap: () => setState(() => selected = '여성'),
                         ),
                       ),
                     ],
                   ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: CustomElevatedButton(
-                      width: double.infinity,
-                      onPressed: selected != null ? _goToNextStep : null,
-                      child: const Text('다음'),
-                    ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GenderButton(
+                          label: '기타',
+                          iconColor: FalletterColor.gray100,
+                          isSelected: selected == '기타',
+                          onTap: () => setState(() => selected = '기타'),
+                          iconWidget: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Symbols.man, color: FalletterColor.gray100, size: 50),
+                              Icon(Symbols.woman, color: FalletterColor.gray100, size: 50),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      const Expanded(child: SizedBox()),
+                    ],
                   ),
+                  const Spacer(),
+                  const SizedBox(height: 40),
+                  CustomElevatedButton(
+                    width: double.infinity,
+                    onPressed: selected != null ? _goToNextStep : null,
+                    child: const Text('다음'),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),

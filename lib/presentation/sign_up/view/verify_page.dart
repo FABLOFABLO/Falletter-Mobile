@@ -36,7 +36,6 @@ class _VerifyPageState extends State<VerifyPage> {
   }
 
   void _onCodeChanged() {
-    // TODO: 인증번호 유효성 조건이 확정되면 아래 조건 수정
     setState(() {
       isButtonEnabled = _verifyController.text.trim().isNotEmpty && _secondsRemaining > 0;
     });
@@ -64,7 +63,6 @@ class _VerifyPageState extends State<VerifyPage> {
   }
 
   void _verifyCode() {
-    // TODO: 실제 인증번호 유효성 검사는 추후 구현
     SignUpFlow.nextStep();
     Navigator.push(
       context,
@@ -87,20 +85,19 @@ class _VerifyPageState extends State<VerifyPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('인증번호를 입력해주세요.', style: FalletterTextStyle.title2),
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    '입력한 이메일로 전송했어요!',
-                    style: FalletterTextStyle.body3.copyWith(
-                      color: FalletterColor.gray400,
-                    ),
+                const SizedBox(height: 8),
+                Text(
+                  '입력한 이메일로 전송했어요!',
+                  style: FalletterTextStyle.body3.copyWith(
+                    color: FalletterColor.gray400,
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Stack(
               children: [
                 CustomTextFormField(
@@ -130,14 +127,16 @@ class _VerifyPageState extends State<VerifyPage> {
             ),
           ),
           const Spacer(),
+          const SizedBox(height: 40),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: CustomElevatedButton(
               width: double.infinity,
               onPressed: isButtonEnabled ? _verifyCode : null,
               child: const Text('다음'),
             ),
           ),
+          const SizedBox(height: 40),
         ],
       ),
     );
