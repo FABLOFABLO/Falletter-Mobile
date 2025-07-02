@@ -52,20 +52,18 @@ class LetterModal extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Divider(height: 1, color: FalletterColor.gray100),
-                  ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1, color: FalletterColor.gray100),
+                  const SizedBox(height: 12),
                   Text(
                     content,
                     style: FalletterTextStyle.body3.copyWith(
                       color: FalletterColor.middleBlack,
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 12, bottom: 12),
-                    child: Divider(height: 1, color: FalletterColor.gray100),
-                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: FalletterColor.gray100),
+                  const SizedBox(height: 12),
                   Center(
                     child: Text(
                       bottom,

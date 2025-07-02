@@ -39,45 +39,36 @@ class DefaultModal extends StatelessWidget {
                 color: FalletterColor.gray900,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Text(
-                description,
-                style: FalletterTextStyle.body3.copyWith(
-                  color: FalletterColor.gray800,
-                ),
+            const SizedBox(height: 20),
+            Text(
+              description,
+              style: FalletterTextStyle.body3.copyWith(
+                color: FalletterColor.gray800,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: CustomElevatedButton(
-                        onPressed: onLeftPressed,
-                        gradient: const LinearGradient(
-                          colors: [FalletterColor.gray200, FalletterColor.gray200],
-                        ),
-                        child: Text(leftText),
-                      ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: CustomElevatedButton(
+                    onPressed: onLeftPressed,
+                    gradient: const LinearGradient(
+                      colors: [FalletterColor.gray200, FalletterColor.gray200],
                     ),
+                    child: Text(leftText),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: CustomElevatedButton(
-                        onPressed: onRightPressed,
-                        gradient: const LinearGradient(
-                          colors: [FalletterColor.error, FalletterColor.error],
-                        ),
-                        child: Text(rightText),
-                      ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: CustomElevatedButton(
+                    onPressed: onRightPressed,
+                    gradient: const LinearGradient(
+                      colors: [FalletterColor.error, FalletterColor.error],
                     ),
+                    child: Text(rightText),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
