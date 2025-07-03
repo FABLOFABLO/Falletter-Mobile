@@ -26,59 +26,68 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: FalletterColor.black,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_icons.length, (index) {
-              final isSelected = currentIndex == index;
-              final gradient = const LinearGradient(
-                colors: FalletterColor.blueGradient,
-              );
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 26),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: FalletterColor.black,
+          border: Border(
+            top: BorderSide(color: FalletterColor.gray900, width: 0.5),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(_icons.length, (index) {
+                final isSelected = currentIndex == index;
+                final gradient = const LinearGradient(
+                  colors: FalletterColor.blueGradient,
+                );
 
-              return Expanded(
-                child: InkWell(
-                  onTap: () => onTap(index),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      isSelected
-                          ? FlexibleIcon(
-                        icon: _icons[index],
-                        gradient: gradient,
-                        fill: 1,
-                      )
-                          : Icon(
-                        _icons[index],
-                        color: FalletterColor.gray700,
-                        size: null,
-                        fill: 1,
-                      ),
-                      isSelected
-                          ? ShaderMask(
-                        shaderCallback: (bounds) => gradient.createShader(bounds),
-                        child: Text(
-                          _labels[index],
-                          style: FalletterTextStyle.body3.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      )
-                          : Text(
-                        _labels[index],
-                        style: FalletterTextStyle.body3.copyWith(
-                          color: FalletterColor.gray700,
-                        ),
-                      ),
-                    ],
+                return Expanded(
+                  child: InkWell(
+                    onTap: () => onTap(index),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        isSelected
+                            ? FlexibleIcon(
+                              icon: _icons[index],
+                              gradient: gradient,
+                              fill: 1,
+                            )
+                            : Icon(
+                              _icons[index],
+                              color: FalletterColor.gray700,
+                              size: null,
+                              fill: 1,
+                            ),
+                        isSelected
+                            ? ShaderMask(
+                              shaderCallback:
+                                  (bounds) => gradient.createShader(bounds),
+                              child: Text(
+                                _labels[index],
+                                style: FalletterTextStyle.body3.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                            : Text(
+                              _labels[index],
+                              style: FalletterTextStyle.body3.copyWith(
+                                color: FalletterColor.gray700,
+                              ),
+                            ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
       ),
