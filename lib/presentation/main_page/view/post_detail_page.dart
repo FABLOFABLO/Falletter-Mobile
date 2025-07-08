@@ -38,15 +38,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   final int currentUserId = 1;
 
-  List<Map<String, dynamic>> comments = [
-    {
-      'id': 2,
-      'userId': 2,
-      'nickname': '다람쥐통',
-      'time': '25분 전',
-      'text': '저도 들었어요!',
-    },
-  ];
+  List<Map<String, dynamic>> comments = [];
 
   @override
   void initState() {

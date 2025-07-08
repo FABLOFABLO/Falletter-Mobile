@@ -1,7 +1,6 @@
 import 'package:falletter/presentation/main_page/view/post_detail_page.dart';
 import 'package:falletter/presentation/main_page/view/post_page.dart';
 import 'package:flutter/material.dart';
-import 'package:falletter/core/components/bottom_navigation_bar.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -38,8 +37,7 @@ class _MainPageState extends State<MainPage> {
             padding: const EdgeInsets.only(bottom: 16),
             child: GestureDetector(
               onTap: () async {
-                final result = await Navigator.push<Map<String, dynamic>>(
-                  context,
+                final result = await Navigator.of(context, rootNavigator: true).push<Map<String, dynamic>>(
                   MaterialPageRoute(
                     builder: (_) => PostDetailPage(
                       title: post['title'] ?? '',
@@ -107,7 +105,7 @@ class _MainPageState extends State<MainPage> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '댓글 2개',
+                          '댓글 0개',
                           style: FalletterTextStyle.body4.copyWith(
                             color: FalletterColor.white,
                           ),
@@ -145,10 +143,6 @@ class _MainPageState extends State<MainPage> {
           ),
           child: const Icon(Symbols.add, fill: 1, color: FalletterColor.black),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onTap,
       ),
     );
   }
