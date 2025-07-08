@@ -1,4 +1,3 @@
-import 'package:falletter/core/components/bottom_navigation_bar.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:falletter/core/components/header/header.dart';
@@ -51,10 +50,6 @@ class _PostPageState extends State<PostPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onTap,
-      ),
       body: SafeArea(
         child: Column(
           children: [
