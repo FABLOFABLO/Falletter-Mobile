@@ -1,63 +1,58 @@
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
-import 'package:falletter/core/components/header/sign_up_indicator.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/presentation/sign_up/view/verify_page.dart';
+import 'package:falletter/core/components/header/sign_up_indicator.dart';
+import 'package:falletter/presentation/sign_up_page/view/email_page.dart';
 import 'package:flutter/material.dart';
-import 'package:falletter/core/components/icon/field_icon.dart';
 
-class EmailPage extends StatefulWidget {
-  const EmailPage({super.key});
+class GradePage extends StatefulWidget {
+  const GradePage({super.key});
 
   @override
-  State<EmailPage> createState() => _EmailPageState();
+  State<GradePage> createState() => _GradePageState();
 }
 
-class _EmailPageState extends State<EmailPage> {
-  final TextEditingController _emailController = TextEditingController();
+class _GradePageState extends State<GradePage> {
+  final TextEditingController _gradeController = TextEditingController();
   bool isButtonEnabled = false;
 
   void _goToNextStep() {
     SignUpFlow.nextStep();
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const VerifyPage()),
+      MaterialPageRoute(builder: (context) => const EmailPage()),
     );
   }
 
   @override
   void initState() {
     super.initState();
-    SignUpFlow.currentStep = 3;
-    _emailController.addListener(_onEmailChanged);
+    SignUpFlow.currentStep = 2;
+    _gradeController.addListener(_onGradeChanged);
   }
 
-  void _onEmailChanged() {
-    final input = _emailController.text.trim();
-
-    final isValid = RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(input);
+  void _onGradeChanged() {
+    final input = _gradeController.text.trim();
+    final parts = input.split(' ');
 
     setState(() {
-      isButtonEnabled = isValid && input.isNotEmpty;
+      isButtonEnabled =
+          parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty;
     });
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _gradeController.dispose();
     super.dispose();
-  }
-
-  void _sendVerificationCode() {
-    // UI만 구현하므로 실제 전송 로직은 제거
-    _goToNextStep();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -69,18 +64,17 @@ class _EmailPageState extends State<EmailPage> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('이메일을 입력해주세요.', style: FalletterTextStyle.title2),
+            child: Text('학번을 입력해주세요.', style: FalletterTextStyle.title2),
           ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: CustomTextFormField(
-              controller: _emailController,
+              controller: _gradeController,
               decoration: InputDecoration(
-                hintText: '이메일을 입력해주세요',
+                hintText: '학번을 입력해주세요.',
                 hintStyle: FalletterTextStyle.placeholder.copyWith(
                   color: FalletterColor.gray700,
                 ),
-                suffixIcon: FieldIcons.emailText(),
               ),
             ),
           ),
@@ -89,8 +83,8 @@ class _EmailPageState extends State<EmailPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
             child: CustomElevatedButton(
               width: double.infinity,
-              onPressed: isButtonEnabled ? _sendVerificationCode : null,
-              child: const Text('인증번호 전송'),
+              onPressed: isButtonEnabled ? _goToNextStep : null,
+              child: const Text('다음'),
             ),
           ),
         ],

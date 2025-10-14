@@ -1,6 +1,6 @@
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/presentation/sign_up/view/grade_page.dart';
+import 'package:falletter/presentation/sign_up_page/view/grade_page.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:falletter/core/constants/color.dart';
