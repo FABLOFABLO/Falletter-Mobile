@@ -1,3 +1,4 @@
+import 'package:falletter/presentation/main_app.dart';
 import 'package:flutter/material.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/icon/field_icon.dart';
@@ -47,6 +48,11 @@ class _LoginPageState extends State<LoginPage> {
     // TODO: 로그인 처리 코드
     debugPrint(
       '로그인 버튼 클릭: 이메일=${_emailController.text}, 비밀번호=${_pwController.text}',
+    );
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const MainApp()),
     );
   }
 
