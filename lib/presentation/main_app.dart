@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/components/bottom_navigation_bar.dart';
 import 'package:falletter/presentation/main_page/view/main_page.dart';
-import 'package:falletter/presentation/main_page/view/post_page.dart';
-import 'package:falletter/presentation/main_page/view/post_edit_page.dart';
 import 'package:falletter/presentation/letter_page/view/letter_page.dart';
 
 class MainApp extends ConsumerStatefulWidget {
