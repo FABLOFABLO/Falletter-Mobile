@@ -20,7 +20,6 @@ class _EmailPageState extends State<EmailPage> {
   bool isButtonEnabled = false;
 
   void _goToNextStep() {
-    SignUpFlow.nextStep();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const VerifyPage()),
@@ -30,7 +29,6 @@ class _EmailPageState extends State<EmailPage> {
   @override
   void initState() {
     super.initState();
-    SignUpFlow.currentStep = 3;
     _emailController.addListener(_onEmailChanged);
   }
 
@@ -46,6 +44,7 @@ class _EmailPageState extends State<EmailPage> {
 
   @override
   void dispose() {
+    _emailController.removeListener(_onEmailChanged);
     _emailController.dispose();
     super.dispose();
   }
@@ -62,29 +61,37 @@ class _EmailPageState extends State<EmailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SafeArea(
-            child: Header(
-              showBackButton: true,
-              rightWidget: SignUpIndicator(),
-            ),
+            child: Header(showBackButton: true, rightWidget: SignUpIndicator()),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('이메일을 입력해주세요.', style: FalletterTextStyle.title2),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: CustomTextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                hintText: '이메일을 입력해주세요',
-                hintStyle: FalletterTextStyle.placeholder.copyWith(
-                  color: FalletterColor.gray700,
-                ),
-                suffixIcon: FieldIcons.emailText(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      '이메일을 입력해주세요.',
+                      style: FalletterTextStyle.title2,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: CustomTextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        hintText: '이메일을 입력해주세요',
+                        hintStyle: FalletterTextStyle.placeholder.copyWith(
+                          color: FalletterColor.gray700,
+                        ),
+                        suffixIcon: FieldIcons.emailText(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          const Spacer(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
             child: CustomElevatedButton(
