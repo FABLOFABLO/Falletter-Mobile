@@ -1,10 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/icon/field_icon.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/presentation/sign_up_page/view/gender_page.dart';
-import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -62,21 +62,32 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    Widget? suffixIcon;
+    if (_pwController.text.isNotEmpty) {
+      if (_obscureText) {
+        suffixIcon = FieldIcons.hidePwIcon(
+          onPressed: () => setState(() => _obscureText = false),
+        );
+      } else {
+        suffixIcon = FieldIcons.showPwIcon(
+          onPressed: () => setState(() => _obscureText = true),
+        );
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 32,
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('로그인하고\n팔레터 사용하기', style: FalletterTextStyle.title2),
+                      Text('로그인하고\n팔레터 사용하기',
+                          style: FalletterTextStyle.title2),
                       const SizedBox(height: 40),
                       CustomTextFormField(
                         controller: _emailController,
@@ -102,30 +113,14 @@ class _LoginPageState extends State<LoginPage> {
                           hintStyle: FalletterTextStyle.placeholder.copyWith(
                             color: FalletterColor.gray700,
                           ),
-                          suffixIcon:
-                          _pwController.text.isNotEmpty
-                              ? (_obscureText
-                              ? FieldIcons.hidePwIcon(
-                            onPressed: () {
-                              setState(() => _obscureText = false);
-                            },
-                          )
-                              : FieldIcons.showPwIcon(
-                            onPressed: () {
-                              setState(() => _obscureText = true);
-                            },
-                          ))
-                              : null,
+                          suffixIcon: suffixIcon,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-              child: Column(
+              Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -147,7 +142,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             );
                           },
-                          child: Text('회원가입', style: FalletterTextStyle.body3),
+                          child: Text('회원가입',
+                              style: FalletterTextStyle.body3),
                         ),
                       ],
                     ),
@@ -159,8 +155,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
