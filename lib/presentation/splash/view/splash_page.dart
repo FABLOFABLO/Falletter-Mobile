@@ -2,6 +2,7 @@ import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/text/gradient_text.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/presentation/login_page/view/login_page.dart';
 import 'package:falletter/presentation/sign_up_page/view/gender_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -58,7 +59,12 @@ class _SplashPageState extends State<SplashPage> {
                   FalletterColor.blueGradient,
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                );
+              },
             ),
           ],
         ),
