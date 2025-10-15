@@ -32,7 +32,6 @@ class _PasswordPageState extends State<PasswordPage> {
   }
 
   void _onPasswordChanged() {
-    final input = _pwController.text.trim();
     setState(() {
       /// TODO: 비밀번호 유효성 검사
       isPasswordValid = true;
