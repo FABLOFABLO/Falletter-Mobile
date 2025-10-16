@@ -29,6 +29,7 @@ class _EmailPageState extends State<EmailPage> {
   @override
   void initState() {
     super.initState();
+    SignUpFlow.currentStep = 3;
     _emailController.addListener(_onEmailChanged);
   }
 
