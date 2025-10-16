@@ -19,7 +19,6 @@ class _GradePageState extends State<GradePage> {
   bool isButtonEnabled = false;
 
   void _goToNextStep() {
-    SignUpFlow.nextStep();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const EmailPage()),
@@ -45,6 +44,7 @@ class _GradePageState extends State<GradePage> {
 
   @override
   void dispose() {
+    _gradeController.removeListener(_onGradeChanged);
     _gradeController.dispose();
     super.dispose();
   }
@@ -70,6 +70,7 @@ class _GradePageState extends State<GradePage> {
             padding: const EdgeInsets.all(20),
             child: CustomTextFormField(
               controller: _gradeController,
+              maxLines: 1,
               decoration: InputDecoration(
                 hintText: '학번을 입력해주세요.',
                 hintStyle: FalletterTextStyle.placeholder.copyWith(
