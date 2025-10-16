@@ -25,6 +25,7 @@ class _VerifyPageState extends State<VerifyPage> {
   void initState() {
     super.initState();
     _startTimer();
+    SignUpFlow.currentStep = 4;
     _verifyController.addListener(_onCodeChanged);
   }
 

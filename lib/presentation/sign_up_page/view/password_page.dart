@@ -24,6 +24,7 @@ class _PasswordPageState extends State<PasswordPage> {
   @override
   void initState() {
     super.initState();
+    SignUpFlow.currentStep = 5;
     _pwController.addListener(_onPasswordChanged);
   }
 
