@@ -1,6 +1,7 @@
 import 'package:falletter/core/components/comment/comment_item.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/post_detail.dart';
+import 'package:falletter/core/providers/comment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
@@ -8,15 +9,19 @@ import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/components/button/send_button.dart';
 import 'package:falletter/core/components/modal/default_modal.dart';
 import 'package:falletter/presentation/main_page/view/post_edit_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-class PostDetailPage extends StatefulWidget {
+class PostDetailPage extends ConsumerStatefulWidget {
+  final int postId;
   final String title;
   final String content;
   final String nickname;
-  final String time;
+  final DateTime time;
 
   const PostDetailPage({
     super.key,
+    required this.postId,
     required this.title,
     required this.content,
     required this.nickname,
@@ -24,28 +29,24 @@ class PostDetailPage extends StatefulWidget {
   });
 
   @override
-  State<PostDetailPage> createState() => _PostDetailPageState();
+  ConsumerState<PostDetailPage> createState() => _PostDetailPageState();
 }
 
-class _PostDetailPageState extends State<PostDetailPage> {
+class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   final TextEditingController _commentController = TextEditingController();
   bool isCommentFilled = false;
-
   late String _title;
   late String _content;
   bool _isModified = false;
   bool _isDeleted = false;
-
-  final int currentUserId = 1;
-
-  List<Map<String, dynamic>> comments = [];
+  int currentUserId = 1;
 
   @override
   void initState() {
     super.initState();
     _title = widget.title;
     _content = widget.content;
-
+    timeago.setLocaleMessages('ko', timeago.KoMessages());
     _commentController.addListener(() {
       setState(() {
         isCommentFilled = _commentController.text.trim().isNotEmpty;
@@ -57,89 +58,82 @@ class _PostDetailPageState extends State<PostDetailPage> {
     showDialog(
       context: dialogContext,
       barrierDismissible: false,
-      builder: (BuildContext context) => DefaultModal(
-        title: '게시물 삭제',
-        description: '게시물이 영구 삭제됩니다.\n정말 삭제하시겠어요?',
-        leftText: '취소',
-        rightText: '삭제',
-        onLeftPressed: () => Navigator.of(context).pop(),
-        onRightPressed: () {
-          Navigator.of(context).pop();
-          setState(() {
-            _isDeleted = true;
-          });
-          Navigator.pop(context, {'deleted': true});
-        },
-      ),
+      builder:
+          (BuildContext context) => DefaultModal(
+            title: '게시물 삭제',
+            description: '게시물이 영구 삭제됩니다.\n정말 삭제하시겠어요?',
+            leftText: '취소',
+            rightText: '삭제',
+            onLeftPressed: () => Navigator.of(context).pop(),
+            onRightPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _isDeleted = true;
+              });
+              Navigator.pop(context, {'deleted': true});
+            },
+          ),
     );
   }
 
   void _showActionDialog() {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: FalletterColor.middleBlack,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Center(
-                child: Text(
-                  '삭제',
-                  style: FalletterTextStyle.button.copyWith(
-                    color: FalletterColor.error,
-                  ),
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _showDeleteConfirmDialog(context);
-              },
+      builder:
+          (context) => Dialog(
+            backgroundColor: FalletterColor.middleBlack,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            const Divider(height: 1, color: FalletterColor.gray900),
-            ListTile(
-              title: Center(
-                child: Text(
-                  '수정',
-                  style: FalletterTextStyle.button.copyWith(
-                    color: FalletterColor.gray50,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Center(
+                    child: Text(
+                      '삭제',
+                      style: FalletterTextStyle.button.copyWith(
+                        color: FalletterColor.error,
+                      ),
+                    ),
                   ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showDeleteConfirmDialog(context);
+                  },
                 ),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                await Future.delayed(Duration.zero);
-
-                if (!mounted) return;
-
-                final result = await Navigator.push<String>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PostEditPage(title: _title, content: _content),
+                const Divider(height: 1, color: FalletterColor.gray900),
+                ListTile(
+                  title: Center(
+                    child: Text(
+                      '수정',
+                      style: FalletterTextStyle.button.copyWith(
+                        color: FalletterColor.gray50,
+                      ),
+                    ),
                   ),
-                );
-
-                if (result != null && mounted) {
-                  setState(() {
-                    _content = result;
-                    _isModified = true;
-                  });
-                }
-              },
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final result = await Navigator.push<String>(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                PostEditPage(title: _title, content: _content),
+                      ),
+                    );
+                    if (result != null) {
+                      setState(() {
+                        _content = result;
+                        _isModified = true;
+                      });
+                    }
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
-  }
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    super.dispose();
   }
 
   void _handleBackNavigation() {
@@ -148,10 +142,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
       return;
     }
     if (_isModified) {
-      Navigator.pop(context, {
-        'title': _title,
-        'content': _content,
-      });
+      Navigator.pop(context, {'title': _title, 'content': _content});
     } else {
       Navigator.pop(context);
     }
@@ -159,27 +150,25 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final commentNotifier = ref.read(commentProvider.notifier);
+    final comments = ref.watch(commentProvider)[widget.postId] ?? [];
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          _handleBackNavigation();
-        }
+        if (!didPop) _handleBackNavigation();
       },
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: Column(
             children: [
-              Header(
-                showBackButton: true,
-                onBack: _handleBackNavigation,
-              ),
+              Header(showBackButton: true, onBack: _handleBackNavigation),
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: PostHeaderCard(
                   nickname: widget.nickname,
-                  time: widget.time,
+                  time: timeago.format(widget.time, locale: 'ko'),
                   title: _title,
                   content: _content,
                   onMorePressed: _showActionDialog,
@@ -192,18 +181,20 @@ class _PostDetailPageState extends State<PostDetailPage> {
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
                     final comment = comments[index];
-                    final isAuthor = comment['userId'] == currentUserId;
-
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: CommentItem(
                         nickname: comment['nickname'],
-                        time: comment['time'],
+                        time: timeago.format(comment['time'], locale: 'ko'),
                         text: comment['text'],
-                        isAuthor: isAuthor,
-                        onDelete: isAuthor
-                            ? () => setState(() => comments.removeAt(index))
-                            : null,
+                        isAuthor: comment['userId'] == currentUserId,
+                        onDelete:
+                            comment['userId'] == currentUserId
+                                ? () => commentNotifier.deleteComment(
+                                  widget.postId,
+                                  comment['id'],
+                                )
+                                : null,
                       ),
                     );
                   },
@@ -215,13 +206,18 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     top: BorderSide(color: FalletterColor.gray900, width: 1),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: CustomTextFormField(
                         controller: _commentController,
-                        decoration: const InputDecoration(hintText: 'Placeholder'),
+                        decoration: const InputDecoration(
+                          hintText: '댓글을 입력하세요',
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -230,18 +226,14 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       onPressed: () {
                         final text = _commentController.text.trim();
                         if (text.isEmpty) return;
-
-                        setState(() {
-                          comments.add({
-                            'id': comments.length + 1,
-                            'userId': currentUserId,
-                            'nickname': 'Nickname',
-                            'time': 'Time',
-                            'text': text,
-                          });
-                          _commentController.clear();
-                          isCommentFilled = false;
+                        commentNotifier.addComment(widget.postId, {
+                          'id': DateTime.now().millisecondsSinceEpoch,
+                          'userId': currentUserId,
+                          'nickname': 'Nickname',
+                          'time': DateTime.now(),
+                          'text': text,
                         });
+                        _commentController.clear();
                       },
                     ),
                   ],
