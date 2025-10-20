@@ -1,22 +1,21 @@
 import 'package:falletter/presentation/answer_page/view/answer_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/components/bottom_navigation_bar.dart';
 import 'package:falletter/presentation/main_page/view/main_page.dart';
 import 'package:falletter/presentation/letter_page/view/letter_page.dart';
 
-class MainApp extends ConsumerStatefulWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
   @override
-  ConsumerState<MainApp> createState() => _MainAppState();
+  State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends ConsumerState<MainApp> {
+class _MainAppState extends State<MainApp> {
   int currentIndex = 0;
 
   final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
-    6,
+    5,
         (_) => GlobalKey<NavigatorState>(),
   );
 
