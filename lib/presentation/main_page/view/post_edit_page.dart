@@ -10,28 +10,35 @@ class PostEditPage extends StatefulWidget {
   final String title;
   final String content;
 
-  const PostEditPage({super.key, required this.title, required this.content});
+  const PostEditPage({
+    super.key,
+    required this.title,
+    required this.content,
+  });
 
   @override
   State<PostEditPage> createState() => _PostEditPageState();
 }
 
 class _PostEditPageState extends State<PostEditPage> {
-  late TextEditingController _contentController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _contentController;
   bool isButtonEnabled = false;
   final int maxLength = 200;
 
   @override
   void initState() {
     super.initState();
+    _titleController = TextEditingController(text: widget.title);
     _contentController = TextEditingController(text: widget.content);
 
     isButtonEnabled = _contentController.text.trim().isNotEmpty;
 
     _contentController.addListener(() {
-      setState(() {
-        isButtonEnabled = _contentController.text.trim().isNotEmpty;
-      });
+      final hasText = _contentController.text.trim().isNotEmpty;
+      if (hasText != isButtonEnabled) {
+        setState(() => isButtonEnabled = hasText);
+      }
     });
   }
 
@@ -45,6 +52,7 @@ class _PostEditPageState extends State<PostEditPage> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -77,7 +85,7 @@ class _PostEditPageState extends State<PostEditPage> {
                     const SizedBox(height: 16),
                     CustomTextFormField(
                       style: FalletterTextStyle.placeholder.copyWith(color: FalletterColor.gray700),
-                      controller: TextEditingController(text: widget.title),
+                      controller: _titleController,
                       decoration: InputDecoration(
                         enabled: false,
                         filled: true,
@@ -111,21 +119,23 @@ class _PostEditPageState extends State<PostEditPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    CustomTextFormField(
-                      controller: _contentController,
-                      maxLines: 7,
-                      maxLength: maxLength,
-                      decoration: InputDecoration(
-                        hintText: '내용을 입력해주세요',
-                        filled: true,
-                        counterText: '',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none,
+                    Expanded(
+                      child: CustomTextFormField(
+                        controller: _contentController,
+                        maxLines: 7,
+                        maxLength: maxLength,
+                        decoration: InputDecoration(
+                          hintText: '내용을 입력해주세요',
+                          filled: true,
+                          counterText: '',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 194),
+                    const Spacer(),
                     CustomElevatedButton(
                       width: double.infinity,
                       onPressed: isButtonEnabled ? _submit : null,
