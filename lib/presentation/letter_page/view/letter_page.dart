@@ -26,28 +26,32 @@ class _LetterPageState extends State<LetterPage> {
     final text = _titleController.text.trim();
     if (text.isEmpty) return false;
     final parts = text.split(' ');
-    if (parts.length < 2) return false;
+    if (parts.length != 2) return false;
+
     final studentId = parts[0];
-    final name = parts.sublist(1).join(' ');
+    final name = parts[1];
     if (studentId.length != 4) return false;
     if (!RegExp(r'^\d{4}$').hasMatch(studentId)) return false;
     if (name.isEmpty) return false;
-    if (!RegExp(r'^[가-힣\s]+$').hasMatch(name)) return false;
+    if (!RegExp(r'^[가-힣]+$').hasMatch(name)) return false;
+
     return true;
   }
 
   bool get isContentValid => _contentController.text.trim().isNotEmpty;
+
   bool get isFormValid => isTitleValid && isContentValid;
+
   bool get isEnabled => availableLetterCount > 0;
 
   String get senderInfo {
     final text = _titleController.text.trim();
     if (text.isEmpty) return '';
     final parts = text.split(' ');
-    if (parts.length < 2) return '';
+    if (parts.length != 2) return '';
     final studentId = parts[0];
-    final name = parts.sublist(1).join('');
-    return '$studentId$name';
+    final name = parts[1];
+    return '$studentId $name';
   }
 
   void _showSubmissionOverlay() {
@@ -110,9 +114,8 @@ class _LetterPageState extends State<LetterPage> {
       });
 
       setState(() {
-        availableLetterCount = availableLetterCount > 0
-            ? availableLetterCount - 1
-            : 0;
+        availableLetterCount =
+            availableLetterCount > 0 ? availableLetterCount - 1 : 0;
       });
 
       _showSubmissionOverlay();
@@ -171,9 +174,10 @@ class _LetterPageState extends State<LetterPage> {
                   Text(
                     '$availableLetterCount개',
                     style: FalletterTextStyle.body1.copyWith(
-                      color: availableLetterCount > 0
-                          ? FalletterColor.white
-                          : FalletterColor.gray500,
+                      color:
+                          availableLetterCount > 0
+                              ? FalletterColor.white
+                              : FalletterColor.gray500,
                     ),
                   ),
                 ],
@@ -182,9 +186,8 @@ class _LetterPageState extends State<LetterPage> {
             Text(
               '누구에게 보내시나요?',
               style: FalletterTextStyle.subTitle1.copyWith(
-                color: isEnabled
-                    ? FalletterColor.white
-                    : FalletterColor.gray500,
+                color:
+                    isEnabled ? FalletterColor.white : FalletterColor.gray500,
               ),
             ),
             const SizedBox(height: 16),
@@ -202,9 +205,10 @@ class _LetterPageState extends State<LetterPage> {
                 Text(
                   '레터를 작성해주세요',
                   style: FalletterTextStyle.subTitle1.copyWith(
-                    color: isEnabled
-                        ? FalletterColor.white
-                        : FalletterColor.gray500,
+                    color:
+                        isEnabled
+                            ? FalletterColor.white
+                            : FalletterColor.gray500,
                   ),
                 ),
                 Row(
@@ -212,9 +216,10 @@ class _LetterPageState extends State<LetterPage> {
                     Text(
                       '${_contentController.text.length}',
                       style: FalletterTextStyle.body2.copyWith(
-                        color: isEnabled
-                            ? FalletterColor.white
-                            : FalletterColor.gray500,
+                        color:
+                            isEnabled
+                                ? FalletterColor.white
+                                : FalletterColor.gray500,
                       ),
                     ),
                     Text(
