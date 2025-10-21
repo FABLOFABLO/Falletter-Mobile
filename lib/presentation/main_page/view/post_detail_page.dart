@@ -1,6 +1,6 @@
 import 'package:falletter/core/components/comment/comment_item.dart';
 import 'package:falletter/core/components/header/header.dart';
-import 'package:falletter/core/components/header/post_detail.dart';
+import 'package:falletter/presentation/main_page/component/post_detail.dart';
 import 'package:falletter/core/providers/comment_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:falletter/core/constants/color.dart';
