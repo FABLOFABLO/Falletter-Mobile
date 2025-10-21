@@ -21,14 +21,6 @@ class _PostPageState extends State<PostPage> {
       _titleController.text.trim().isNotEmpty &&
           _contentController.text.trim().isNotEmpty;
 
-  int currentIndex = 0;
-
-  void onTap(int index) {
-    setState(() {
-      currentIndex = index;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -105,7 +97,7 @@ class _PostPageState extends State<PostPage> {
                       maxLength: maxLength,
                       decoration: const InputDecoration(counterText: ''),
                     ),
-                    const SizedBox(height: 194),
+                    const Spacer(),
                     CustomElevatedButton(
                       width: double.infinity,
                       onPressed: isFilled
