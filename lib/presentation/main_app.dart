@@ -1,4 +1,5 @@
 import 'package:falletter/presentation/answer_page/view/answer_page.dart';
+import 'package:falletter/presentation/my_page/views/mypage_view.dart';
 import 'package:flutter/material.dart';
 import 'package:falletter/core/components/bottom_navigation_bar.dart';
 import 'package:falletter/presentation/main_page/view/main_page.dart';
@@ -48,7 +49,7 @@ class _MainAppState extends State<MainApp> {
           _buildOffstageNavigator(1, const LetterPage()),
           _buildOffstageNavigator(2, const AnswerPage()),
           _buildOffstageNavigator(3, const Placeholder(child: Text('알림'))),
-          _buildOffstageNavigator(4, const Placeholder(child: Text('마이페이지'))),
+          _buildOffstageNavigator(4, const MypageView()),
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
