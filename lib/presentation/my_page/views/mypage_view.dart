@@ -85,11 +85,11 @@ class MypageView extends ConsumerWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  final String userName;
+  final String nickname;
   final int attendanceDays;
 
   const _ProfileHeader({
-    required this.userName,
+    required this.nickname,
     required this.attendanceDays,
   });
 
@@ -124,7 +124,7 @@ class _ProfileHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      userName,
+                      nickname,
                       style: FalletterTextStyle.title3,
                     ),
                     Text(
