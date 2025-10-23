@@ -30,7 +30,7 @@ class MypageView extends ConsumerWidget {
               height: 60,
             ),
             _ProfileHeader(
-              userName: nickname,
+              nickname: nickname,
               attendanceDays: attendanceDays,
             ),
             Row(
