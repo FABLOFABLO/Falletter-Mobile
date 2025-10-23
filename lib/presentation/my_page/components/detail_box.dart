@@ -14,9 +14,7 @@ class DetailBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: FalletterColor.middleBlack,
-      child: GestureDetector(
+    return GestureDetector(
         onTap: onTap,
         child: Container(
           width: double.infinity,
@@ -30,7 +28,6 @@ class DetailBox extends StatelessWidget {
             child: child,
           ),
         ),
-      ),
-    );
+      );
   }
 }
