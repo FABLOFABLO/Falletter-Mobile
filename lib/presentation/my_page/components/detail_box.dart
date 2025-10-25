@@ -15,19 +15,23 @@ class DetailBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          height: 60,
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.all(20),
-          child: DefaultTextStyle(
-            style: FalletterTextStyle.button.copyWith(
-              color: FalletterColor.white,
-            ),
-            child: child,
-          ),
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: FalletterColor.middleBlack,
+          borderRadius: BorderRadius.circular(8),
         ),
-      );
+        width: double.infinity,
+        height: 60,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.all(20),
+        child: DefaultTextStyle(
+          style: FalletterTextStyle.button.copyWith(
+            color: FalletterColor.white,
+          ),
+          child: child,
+        ),
+      ),
+    );
   }
 }

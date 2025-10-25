@@ -22,14 +22,20 @@ class ItemBox extends ConsumerWidget {
     return Container(
       width: double.infinity,
       height: 68,
-      color: FalletterColor.middleBlack,
+      decoration: BoxDecoration(
+        color: FalletterColor.middleBlack,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             item,
-            Text('$count개', style: FalletterTextStyle.body1,),
+            Text(
+              '$count개',
+              style: FalletterTextStyle.body1,
+            ),
           ],
         ),
       ),
