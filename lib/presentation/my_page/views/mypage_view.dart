@@ -63,7 +63,7 @@ class MypageView extends ConsumerWidget {
           children: [
             const SizedBox(height: 60),
             _ProfileHeader(
-              userName: nickname,
+              nickname: nickname,
               attendanceDays: attendanceDays,
             ),
             Row(
@@ -128,9 +128,7 @@ class MypageView extends ConsumerWidget {
                 () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const ThemeView(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const ThemeView()),
                   );
                 },
               ],
