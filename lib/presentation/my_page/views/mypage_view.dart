@@ -128,7 +128,9 @@ class MypageView extends ConsumerWidget {
                 () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ThemeView()),
+                    MaterialPageRoute(
+                        builder: (context) => const ThemeView(),
+                    ),
                   );
                 },
               ],
