@@ -17,15 +17,7 @@ class SentLetterView extends ConsumerStatefulWidget {
 }
 
 class _SentLetterViewState extends ConsumerState<SentLetterView> {
-  final _refreshKey = GlobalKey<RefreshIndicatorState>();
   Timer? _autoRefreshTimer;
-
-  void _setupAutoRefresh() {
-    _autoRefreshTimer?.cancel();
-    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
-      setState(() {});
-    });
-  }
 
   @override
   void initState() {
@@ -39,11 +31,20 @@ class _SentLetterViewState extends ConsumerState<SentLetterView> {
     super.dispose();
   }
 
+  void _setupAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
+      ref.refresh(sentLettersProvider);
+    });
+  }
+
   Future<void> _refreshLetters() async {
-    setState(() {});
+    /// 현재는 단순히 ref.refresh()를 호출, 서버 연동 시에는 실제로 새로운 레터 존재 여부를 확인한 뒤 refresh 실행
+    ref.refresh(sentLettersProvider);
   }
 
   void _showLetterModal(SentLetter letter) {
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -67,7 +68,6 @@ class _SentLetterViewState extends ConsumerState<SentLetterView> {
     final sentLetters =
         letters.where((e) => e.sentAt != null).toList()
           ..sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
-
     final sortedLetters = [...sendingLetters, ...sentLetters];
 
     return Scaffold(
@@ -84,7 +84,6 @@ class _SentLetterViewState extends ConsumerState<SentLetterView> {
               child: RefreshIndicator(
                 backgroundColor: FalletterColor.middleBlack,
                 color: FalletterColor.white,
-                key: _refreshKey,
                 onRefresh: _refreshLetters,
                 child: ListView.separated(
                   itemCount: sortedLetters.length,
