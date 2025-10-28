@@ -17,14 +17,14 @@ class DetailBox extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        decoration: BoxDecoration(
-          color: FalletterColor.middleBlack,
-          borderRadius: BorderRadius.circular(8),
-        ),
         width: double.infinity,
         height: 60,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: FalletterColor.middleBlack,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: DefaultTextStyle(
           style: FalletterTextStyle.button.copyWith(
             color: FalletterColor.white,

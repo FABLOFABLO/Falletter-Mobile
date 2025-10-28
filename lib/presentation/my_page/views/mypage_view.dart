@@ -16,10 +16,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 class MypageView extends ConsumerWidget {
   final Gradient? gradient;
 
-  const MypageView({
-    super.key,
-    this.gradient,
-  });
+  const MypageView({super.key, this.gradient});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,18 +31,14 @@ class MypageView extends ConsumerWidget {
             (BuildContext context) => DefaultModal(
               title: '로그아웃',
               description:
-                  '기기내 계정에서 로그아웃 할 수 있어요.\n'
-                  '다음 이용 시에는 다시 로그인 해야합니다.\n'
-                  '정말 로그아웃하시겠어요?',
+                  '기기내 계정에서 로그아웃 할 수 있어요.\n다음 이용 시에는 다시 로그인 해야합니다.\n정말 로그아웃하시겠어요?',
               leftText: '취소',
               rightText: '로그아웃',
               onLeftPressed: () => Navigator.of(context).pop(),
               onRightPressed: () {
                 Navigator.of(context).pop();
-
                 ref.read(currentUserNicknameProvider.notifier).state = '';
                 ref.read(currentUserAttendanceProvider.notifier).state = 0;
-
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const SplashPage()),
                   (route) => false,
@@ -62,10 +55,7 @@ class MypageView extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 60),
-            _ProfileHeader(
-              nickname: nickname,
-              attendanceDays: attendanceDays,
-            ),
+            _ProfileHeader(nickname: nickname, attendanceDays: attendanceDays),
             Row(
               children: [
                 Expanded(
@@ -95,54 +85,40 @@ class MypageView extends ConsumerWidget {
               title: '내역',
               items: ['보낸 레터', '받은 레터', '브릭 사용 내역'],
               onTaps: [
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SentLetterView(),
-                    ),
-                  );
-                },
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ReveiveLetterView(),
-                    ),
-                  );
-                },
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UsedBrickView(),
-                    ),
-                  );
-                },
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SentLetterView(),
+                  ),
+                ),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ReceiveLetterView(),
+                  ),
+                ),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UsedBrickView(),
+                  ),
+                ),
               ],
             ),
             TitleSection(
               title: '시스템',
               items: ['테마 설정'],
               onTaps: [
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ThemeView(),
-                    ),
-                  );
-                },
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ThemeView()),
+                ),
               ],
             ),
             TitleSection(
               title: '계정',
               items: ['로그아웃'],
-              onTaps: [
-                () {
-                  _showLogoutConfirmDialog(context);
-                },
-              ],
+              onTaps: [() => _showLogoutConfirmDialog(context)],
             ),
           ],
         ),
@@ -162,54 +138,46 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Container(
-            width: double.infinity,
-            height: 84,
-            decoration: BoxDecoration(
-              color: FalletterColor.middleBlack,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: FalletterGradient.vertical(
-                        FalletterColor.blueGradient,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    width: 52,
-                    height: 52,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Container(
+        width: double.infinity,
+        height: 84,
+        decoration: BoxDecoration(
+          color: FalletterColor.middleBlack,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: FalletterGradient.vertical(
+                    FalletterColor.blueGradient,
                   ),
+                  shape: BoxShape.circle,
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      nickname,
-                      style: FalletterTextStyle.title3,
-                    ),
-                    Text(
-                      '$attendanceDays일 연속 출석중',
-                      style: FalletterTextStyle.body3.copyWith(
-                        color: FalletterColor.gray400,
-                      ),
-                    ),
-                  ],
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(nickname, style: FalletterTextStyle.title3),
+                Text(
+                  '$attendanceDays일 연속 출석중',
+                  style: FalletterTextStyle.body3.copyWith(
+                    color: FalletterColor.gray400,
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
