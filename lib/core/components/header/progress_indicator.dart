@@ -17,7 +17,7 @@ class ProgressHeader extends StatelessWidget {
     final progress = currentIndex / totalCount;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 70),
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 27),
       child: Row(
         children: [
           Expanded(
