@@ -95,7 +95,7 @@ class MypageView extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const ReveiveLetterView()),
+                        builder: (context) => const ReceiveLetterView()),
                   );
                 },
                     () {
