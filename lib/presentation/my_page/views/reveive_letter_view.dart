@@ -3,20 +3,20 @@ import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/modal/letter_modal.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/core/providers/sent_letter_provider.dart';
-import 'package:falletter/core/utils/sent_time_utils.dart';
-import 'package:falletter/presentation/my_page/components/sent_letter_box.dart'; // ✅ SentLetterBox로 통일
+import 'package:falletter/core/providers/receive_letter_provider.dart';
+import 'package:falletter/presentation/my_page/components/received_letter_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
-class SentLetterView extends ConsumerStatefulWidget {
-  const SentLetterView({super.key});
+class ReceiveLetterView extends ConsumerStatefulWidget {
+  const ReceiveLetterView({super.key});
 
   @override
-  ConsumerState<SentLetterView> createState() => _SentLetterViewState();
+  ConsumerState<ReceiveLetterView> createState() => _ReceiveLetterViewState();
 }
 
-class _SentLetterViewState extends ConsumerState<SentLetterView> {
+class _ReceiveLetterViewState extends ConsumerState<ReceiveLetterView> {
   Timer? _autoRefreshTimer;
 
   @override
@@ -34,24 +34,23 @@ class _SentLetterViewState extends ConsumerState<SentLetterView> {
   void _setupAutoRefresh() {
     _autoRefreshTimer?.cancel();
     _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
-      ref.refresh(sentLettersProvider);
+      ref.refresh(receivedLettersProvider);
     });
   }
 
   Future<void> _refreshLetters() async {
-    /// 현재는 단순히 ref.refresh()를 호출, 서버 연동 시에는 실제로 새로운 레터 존재 여부를 확인한 뒤 refresh 실행
-    ref.refresh(sentLettersProvider);
+    /// 서버 연동 시, 실제로 새로운 레터 존재 여부를 확인 후 refresh 실행
+    ref.refresh(receivedLettersProvider);
   }
 
-  void _showLetterModal(SentLetter letter) {
-    if (!mounted) return;
+  void _showLetterModal(BuildContext context, ReceivedLetter letter) {
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) => LetterModal(
-        dear: letter.dear,
+        dear: '${letter.receiptientInfo}에게',
         content: letter.content,
-        bottom: formatSentTime(letter.sentAt),
+        bottom: '누군가 보냄',
         onClose: () {
           Navigator.of(dialogContext).pop();
         },
@@ -61,13 +60,7 @@ class _SentLetterViewState extends ConsumerState<SentLetterView> {
 
   @override
   Widget build(BuildContext context) {
-    final letters = ref.watch(sentLettersProvider);
-
-    final sendingLetters = letters.where((e) => e.sentAt == null).toList();
-    final sentLetters =
-    letters.where((e) => e.sentAt != null).toList()
-      ..sort((a, b) => a.sentAt!.compareTo(b.sentAt!));
-    final sortedLetters = [...sendingLetters, ...sentLetters];
+    final letters = ref.watch(receivedLettersProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -77,7 +70,10 @@ class _SentLetterViewState extends ConsumerState<SentLetterView> {
             const Header(showBackButton: true),
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Text('내가 보낸 레터', style: FalletterTextStyle.title2),
+              child: Text(
+                '내가 받은 레터',
+                style: FalletterTextStyle.title2,
+              ),
             ),
             Expanded(
               child: RefreshIndicator(
@@ -85,15 +81,21 @@ class _SentLetterViewState extends ConsumerState<SentLetterView> {
                 color: FalletterColor.white,
                 onRefresh: _refreshLetters,
                 child: ListView.separated(
-                  itemCount: sortedLetters.length,
+                  itemCount: letters.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
-                    final letter = sortedLetters[index];
+                    final letter = letters[index];
+                    final preview = letter.content.length > 35
+                        ? '${letter.content.substring(0, 35)}...'
+                        : letter.content;
+                    final arrivedAt =
+                    DateFormat('M월 d일 도착').format(letter.receivedAt);
+
                     return GestureDetector(
-                      onTap: () => _showLetterModal(letter),
-                      child: SentLetterBox(
-                        sentAt: letter.sentAt,
-                        recipientInfo: letter.recipientInfo,
+                      onTap: () => _showLetterModal(context, letter),
+                      child: ReceivedLetterBox(
+                        arrivedAt: arrivedAt,
+                        preview: preview,
                       ),
                     );
                   },
