@@ -4,9 +4,10 @@ import 'package:falletter/core/components/modal/letter_modal.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/providers/receive_letter_provider.dart';
-import 'package:falletter/presentation/my_page/components/reveived_letter_box.dart';
+import 'package:falletter/presentation/my_page/components/received_letter_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class ReceiveLetterView extends ConsumerStatefulWidget {
   const ReceiveLetterView({super.key});
@@ -47,7 +48,7 @@ class _ReceiveLetterViewState extends ConsumerState<ReceiveLetterView> {
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) => LetterModal(
-        dear: '${letter.reciptionInfo}에게',
+        dear: '${letter.receiptientInfo}에게',
         content: letter.content,
         bottom: '누군가 보냄',
         onClose: () {
@@ -88,11 +89,11 @@ class _ReceiveLetterViewState extends ConsumerState<ReceiveLetterView> {
                         ? '${letter.content.substring(0, 35)}...'
                         : letter.content;
                     final arrivedAt =
-                        '${letter.receivedAt.month}월 ${letter.receivedAt.day}일 도착';
+                    DateFormat('M월 d일 도착').format(letter.receivedAt);
 
                     return GestureDetector(
                       onTap: () => _showLetterModal(context, letter),
-                      child: ReveivedLetterBox(
+                      child: ReceivedLetterBox(
                         arrivedAt: arrivedAt,
                         preview: preview,
                       ),

@@ -2,11 +2,11 @@ import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/presentation/my_page/components/letter_box.dart';
 import 'package:flutter/material.dart';
 
-class ReveivedLetterBox extends StatelessWidget {
+class ReceivedLetterBox extends StatelessWidget {
   final String arrivedAt;
   final String preview;
 
-  const ReveivedLetterBox({
+  const ReceivedLetterBox({
     super.key,
     required this.arrivedAt,
     required this.preview,
