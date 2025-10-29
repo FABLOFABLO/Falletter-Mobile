@@ -1,4 +1,7 @@
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
@@ -6,11 +9,11 @@ import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 
-class LetterPage extends StatefulWidget {
+class LetterPage extends ConsumerStatefulWidget {
   const LetterPage({super.key});
 
   @override
-  State<LetterPage> createState() => _LetterPageState();
+  ConsumerState<LetterPage> createState() => _LetterPageState();
 }
 
 class _LetterPageState extends State<LetterPage> {
@@ -154,6 +157,9 @@ class _LetterPageState extends State<LetterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -166,7 +172,7 @@ class _LetterPageState extends State<LetterPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   SvgPicture.asset(
-                    'assets/icon/letter.svg',
+                    themeColors.letterSvg,
                     width: 38,
                     height: 26,
                   ),

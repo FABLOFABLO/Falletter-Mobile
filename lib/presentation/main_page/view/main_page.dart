@@ -1,4 +1,6 @@
 import 'package:falletter/core/providers/comment_provider.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/presentation/main_page/view/post_detail_page.dart';
 import 'package:falletter/presentation/main_page/view/post_page.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +37,8 @@ class _MainPageState extends ConsumerState<MainPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final fabSize = screenWidth * 0.2;
     final commentState = ref.watch(commentProvider);
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
 
     return Scaffold(
       body: RefreshIndicator(
@@ -165,8 +169,8 @@ class _MainPageState extends ConsumerState<MainPage> {
         child: Container(
           width: fabSize,
           height: fabSize,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: FalletterColor.blueGradient),
+          decoration: BoxDecoration(
+            gradient: themeColors.button,
             shape: BoxShape.circle,
           ),
           child: const Icon(Symbols.add, fill: 1, color: FalletterColor.black),
