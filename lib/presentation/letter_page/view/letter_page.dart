@@ -1,3 +1,4 @@
+import 'package:falletter/core/providers/letter_provider.dart';
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
@@ -16,14 +17,10 @@ class LetterPage extends ConsumerStatefulWidget {
   ConsumerState<LetterPage> createState() => _LetterPageState();
 }
 
-class _LetterPageState extends State<LetterPage> {
+class _LetterPageState extends ConsumerState<LetterPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   final int maxLength = 200;
-
-  bool isSubmitted = false;
-
-  int availableLetterCount = 0;
 
   bool get isTitleValid {
     final text = _titleController.text.trim();
@@ -45,8 +42,6 @@ class _LetterPageState extends State<LetterPage> {
 
   bool get isFormValid => isTitleValid && isContentValid;
 
-  bool get isEnabled => availableLetterCount > 0;
-
   String get senderInfo {
     final text = _titleController.text.trim();
     if (text.isEmpty) return '';
@@ -57,11 +52,11 @@ class _LetterPageState extends State<LetterPage> {
     return '$studentId $name';
   }
 
-  void _showSubmissionOverlay() {
+  void _showSubmissionOverlay(ThemeColors themeColors) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.8),
+      barrierColor: Colors.black.withOpacity(0.8),
       builder: (BuildContext context) {
         return PopScope(
           canPop: false,
@@ -76,20 +71,13 @@ class _LetterPageState extends State<LetterPage> {
                 ),
                 const SizedBox(height: 20),
                 Lottie.asset(
-                  'assets/lottie/paperPlane.json',
+                  themeColors.sendLetterLottie,
                   width: 200,
                   height: 131,
                   fit: BoxFit.cover,
                   onLoaded: (composition) {
                     Future.delayed(composition.duration, () {
-                      if (mounted) {
-                        Navigator.of(context).pop();
-                        setState(() {
-                          isSubmitted = false;
-                          _titleController.clear();
-                          _contentController.clear();
-                        });
-                      }
+                      if (mounted) Navigator.of(context).pop();
                     });
                   },
                 ),
@@ -110,26 +98,25 @@ class _LetterPageState extends State<LetterPage> {
   }
 
   Future<void> _submitLetter() async {
-    if (!isFormValid || isSubmitted) return;
-    try {
-      setState(() {
-        isSubmitted = true;
-      });
+    if (!isFormValid) return;
 
-      setState(() {
-        availableLetterCount =
-            availableLetterCount > 0 ? availableLetterCount - 1 : 0;
-      });
+    final letterState = ref.read(letterProvider.notifier);
+    final selectedTheme = ref.read(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
 
-      _showSubmissionOverlay();
+    if (letterState.state.availableLetter <= 0) return;
 
-      print('레터 전송됨');
-    } catch (e) {
-      setState(() {
-        isSubmitted = false;
-      });
-      print('레터 전송 실패: $e');
-    }
+    letterState.sendLetter(
+      senderId: 'me', // 실제 사용자 id로 변경 예정
+      receiverId: _titleController.text.trim(),
+      title: senderInfo,
+      content: _contentController.text.trim(),
+    );
+
+    _showSubmissionOverlay(themeColors);
+
+    _titleController.clear();
+    _contentController.clear();
   }
 
   @override
@@ -137,15 +124,6 @@ class _LetterPageState extends State<LetterPage> {
     super.initState();
     _titleController.addListener(() => setState(() {}));
     _contentController.addListener(() => setState(() {}));
-    _fetchLetterCount();
-  }
-
-  /// TODO: 서버에서 실제 보유 레터 개수를 받아오는 예시 함수, 더미값
-  Future<void> _fetchLetterCount() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    setState(() {
-      availableLetterCount = 3;
-    });
   }
 
   @override
@@ -159,6 +137,9 @@ class _LetterPageState extends State<LetterPage> {
   Widget build(BuildContext context) {
     final selectedTheme = ref.watch(themeProvider);
     final themeColors = appThemeColors[selectedTheme]!;
+    final letterState = ref.watch(letterProvider);
+
+    final isEnabled = letterState.availableLetter > 0;
 
     return Scaffold(
       body: Padding(
@@ -178,10 +159,10 @@ class _LetterPageState extends State<LetterPage> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    '$availableLetterCount개',
+                    '${letterState.availableLetter}개',
                     style: FalletterTextStyle.body1.copyWith(
                       color:
-                          availableLetterCount > 0
+                          letterState.availableLetter > 0
                               ? FalletterColor.white
                               : FalletterColor.gray500,
                     ),
@@ -245,8 +226,7 @@ class _LetterPageState extends State<LetterPage> {
                 controller: _contentController,
                 maxLines: 7,
                 maxLength: maxLength,
-                decoration: InputDecoration(
-                  enabled: isEnabled,
+                decoration: const InputDecoration(
                   counterText: '',
                 ),
               ),

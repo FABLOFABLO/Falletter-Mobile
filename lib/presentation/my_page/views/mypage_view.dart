@@ -1,7 +1,9 @@
 import 'package:falletter/core/components/modal/default_modal.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/user_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/presentation/my_page/components/item_box.dart';
 import 'package:falletter/presentation/my_page/views/reveive_letter_view.dart';
 import 'package:falletter/presentation/my_page/views/sent_letter_view.dart';
@@ -20,6 +22,8 @@ class MypageView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
     final nickname = ref.watch(currentUserNicknameProvider);
     final attendanceDays = ref.watch(currentUserAttendanceProvider);
 
@@ -27,24 +31,23 @@ class MypageView extends ConsumerWidget {
       showDialog(
         context: dialogContext,
         barrierDismissible: false,
-        builder:
-            (BuildContext context) => DefaultModal(
-              title: '로그아웃',
-              description:
-                  '기기내 계정에서 로그아웃 할 수 있어요.\n다음 이용 시에는 다시 로그인 해야합니다.\n정말 로그아웃하시겠어요?',
-              leftText: '취소',
-              rightText: '로그아웃',
-              onLeftPressed: () => Navigator.of(context).pop(),
-              onRightPressed: () {
-                Navigator.of(context).pop();
-                ref.read(currentUserNicknameProvider.notifier).state = '';
-                ref.read(currentUserAttendanceProvider.notifier).state = 0;
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const SplashPage()),
+        builder: (BuildContext context) => DefaultModal(
+          title: '로그아웃',
+          description:
+          '기기내 계정에서 로그아웃 할 수 있어요.\n다음 이용 시에는 다시 로그인 해야합니다.\n정말 로그아웃하시겠어요?',
+          leftText: '취소',
+          rightText: '로그아웃',
+          onLeftPressed: () => Navigator.of(context).pop(),
+          onRightPressed: () {
+            Navigator.of(context).pop();
+            ref.read(currentUserNicknameProvider.notifier).state = '';
+            ref.read(currentUserAttendanceProvider.notifier).state = 0;
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const SplashPage()),
                   (route) => false,
-                );
-              },
-            ),
+            );
+          },
+        ),
       );
     }
 
@@ -56,12 +59,15 @@ class MypageView extends ConsumerWidget {
           children: [
             const SizedBox(height: 60),
             _ProfileHeader(nickname: nickname, attendanceDays: attendanceDays),
+            const SizedBox(height: 12),
+
+            // <-- 수정된 부분: item: 으로 Widget을 전달하도록 변경 -->
             Row(
               children: [
                 Expanded(
                   child: ItemBox(
                     item: SvgPicture.asset(
-                      'assets/icon/letter.svg',
+                      themeColors.letterSvg,
                       width: 36,
                       height: 25,
                     ),
@@ -72,7 +78,7 @@ class MypageView extends ConsumerWidget {
                 Expanded(
                   child: ItemBox(
                     item: SvgPicture.asset(
-                      'assets/icon/brick.svg',
+                      themeColors.brickSvg,
                       width: 36,
                       height: 38,
                     ),
@@ -81,23 +87,25 @@ class MypageView extends ConsumerWidget {
                 ),
               ],
             ),
+
+            const SizedBox(height: 20),
             TitleSection(
               title: '내역',
               items: ['보낸 레터', '받은 레터', '브릭 사용 내역'],
               onTaps: [
-                () => Navigator.push(
+                    () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const SentLetterView(),
                   ),
                 ),
-                () => Navigator.push(
+                    () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const ReceiveLetterView(),
                   ),
                 ),
-                () => Navigator.push(
+                    () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const UsedBrickView(),
@@ -109,7 +117,7 @@ class MypageView extends ConsumerWidget {
               title: '시스템',
               items: ['테마 설정'],
               onTaps: [
-                () => Navigator.push(
+                    () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ThemeView()),
                 ),
@@ -127,7 +135,7 @@ class MypageView extends ConsumerWidget {
   }
 }
 
-class _ProfileHeader extends StatelessWidget {
+class _ProfileHeader extends ConsumerWidget {
   final String nickname;
   final int attendanceDays;
 
@@ -137,7 +145,9 @@ class _ProfileHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Container(
@@ -155,9 +165,7 @@ class _ProfileHeader extends StatelessWidget {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  gradient: FalletterGradient.vertical(
-                    FalletterColor.blueGradient,
-                  ),
+                  gradient: themeColors.profile,
                   shape: BoxShape.circle,
                 ),
               ),

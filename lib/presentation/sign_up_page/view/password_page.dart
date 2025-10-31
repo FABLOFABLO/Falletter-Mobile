@@ -1,22 +1,25 @@
-import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/sign_up_indicator.dart';
+import 'package:falletter/core/components/icon/field_icon.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/core/components/icon/field_icon.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/presentation/main_app.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 
-class PasswordPage extends StatefulWidget {
+class PasswordPage extends ConsumerStatefulWidget {
   const PasswordPage({super.key});
 
   @override
-  State<PasswordPage> createState() => _PasswordPageState();
+  ConsumerState<PasswordPage> createState() => _PasswordPageState();
 }
 
-class _PasswordPageState extends State<PasswordPage> {
+class _PasswordPageState extends ConsumerState<PasswordPage> {
   final TextEditingController _pwController = TextEditingController();
   bool isPasswordValid = false;
   bool _obscureText = true;
@@ -35,7 +38,7 @@ class _PasswordPageState extends State<PasswordPage> {
     });
   }
 
-  void _showSuccessDialog() async {
+  void _showSuccessDialog(ThemeColors themeColors) async {
     await showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -58,7 +61,7 @@ class _PasswordPageState extends State<PasswordPage> {
               ),
               Center(
                 child: Lottie.asset(
-                  'assets/lottie/congratulation.json',
+                  themeColors.signupLottie,
                   width: 400,
                   height: 400,
                   repeat: false,
@@ -85,8 +88,8 @@ class _PasswordPageState extends State<PasswordPage> {
     }
   }
 
-  void _goToNextStep() {
-    _showSuccessDialog();
+  void _goToNextStep(ThemeColors themeColors) {
+    _showSuccessDialog(themeColors);
   }
 
   @override
@@ -97,6 +100,9 @@ class _PasswordPageState extends State<PasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
+
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,22 +127,19 @@ class _PasswordPageState extends State<PasswordPage> {
                     hintStyle: FalletterTextStyle.placeholder.copyWith(
                       color: FalletterColor.gray700,
                     ),
-                    suffixIcon:
-                        _pwController.text.isNotEmpty
-                            ? (_obscureText
-                                ? FieldIcons.hidePwIcon(
-                                  onPressed:
-                                      () => setState(() {
-                                        _obscureText = false;
-                                      }),
-                                )
-                                : FieldIcons.showPwIcon(
-                                  onPressed:
-                                      () => setState(() {
-                                        _obscureText = true;
-                                      }),
-                                ))
-                            : null,
+                    suffixIcon: _pwController.text.isNotEmpty
+                        ? (_obscureText
+                        ? FieldIcons.hidePwIcon(
+                      onPressed: () => setState(() {
+                        _obscureText = false;
+                      }),
+                    )
+                        : FieldIcons.showPwIcon(
+                      onPressed: () => setState(() {
+                        _obscureText = true;
+                      }),
+                    ))
+                        : null,
                   ),
                 ),
               ),
@@ -146,7 +149,8 @@ class _PasswordPageState extends State<PasswordPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
             child: CustomElevatedButton(
               width: double.infinity,
-              onPressed: isPasswordValid ? _goToNextStep : null,
+              onPressed:
+              isPasswordValid ? () => _goToNextStep(themeColors) : null,
               child: const Text('회원가입'),
             ),
           ),
