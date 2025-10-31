@@ -1,5 +1,7 @@
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/constants/color.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,9 +19,11 @@ class AnswerButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
     final gradient =
         isSelected
-            ? FalletterGradient.horizontal(FalletterColor.blueGradient)
+            ? themeColors.answerButton
             : FalletterGradient.horizontal([
               FalletterColor.middleBlack,
               FalletterColor.middleBlack,

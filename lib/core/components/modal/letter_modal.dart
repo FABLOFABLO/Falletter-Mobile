@@ -1,9 +1,12 @@
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 
-class LetterModal extends StatelessWidget {
+class LetterModal extends ConsumerWidget {
   final String dear;
   final String content;
   final String bottom;
@@ -18,8 +21,10 @@ class LetterModal extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -27,10 +32,9 @@ class LetterModal extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 편지 박스
           Container(
             decoration: BoxDecoration(
-              gradient: FalletterGradient.horizontal(FalletterColor.blueGradient),
+              gradient: themeColors.letterModalBorder,
               borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.all(2),

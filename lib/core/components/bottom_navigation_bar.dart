@@ -1,10 +1,13 @@
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:falletter/core/components/flexible_icon.dart';
 
-class CustomBottomNavigationBar extends StatelessWidget {
+class CustomBottomNavigationBar extends ConsumerWidget {
   final int currentIndex;
   final void Function(int) onTap;
 
@@ -25,7 +28,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
   static const _labels = ['홈', '레터', '답변', '알림', '마이페이지'];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
+
     return Padding(
       padding: const EdgeInsets.only(top: 10, bottom: 26),
       child: Container(
@@ -43,9 +49,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(_icons.length, (index) {
                 final isSelected = currentIndex == index;
-                final gradient = const LinearGradient(
-                  colors: FalletterColor.blueGradient,
-                );
+                final gradient = themeColors.bottomNavIcon;
 
                 return Expanded(
                   child: InkWell(

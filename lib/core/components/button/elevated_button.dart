@@ -1,8 +1,11 @@
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CustomElevatedButton extends StatelessWidget {
+class CustomElevatedButton extends ConsumerWidget {
   final VoidCallback? onPressed;
   final double? height;
   final double? width;
@@ -21,8 +24,10 @@ class CustomElevatedButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bool isEnabled = onPressed != null;
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
 
     return Container(
       width: width,
@@ -31,7 +36,7 @@ class CustomElevatedButton extends StatelessWidget {
         gradient:
             isEnabled
                 ? (gradient ??
-                    FalletterGradient.horizontal(FalletterColor.blueGradient))
+                    themeColors.button)
                 : FalletterGradient.horizontal([
                   FalletterColor.gray900,
                   FalletterColor.gray900,
