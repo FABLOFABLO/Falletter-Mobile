@@ -1,5 +1,5 @@
 // letter 모델 (임시)
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Letter {
   final String senderId;
@@ -35,8 +35,8 @@ class LetterState {
   }) {
     return LetterState(
       availableLetter: availableLetter ?? this.availableLetter,
-      sentLetters: sentLetters ?? this.sentLetters,
-      receivedLetters: receivedLetters ?? this.receivedLetters,
+      sentLetters: sentLetters != null ? List.of(sentLetters) : List.of(this.sentLetters),
+      receivedLetters: receivedLetters != null ? List.of(receivedLetters) : List.of(this.receivedLetters),
     );
   }
 }

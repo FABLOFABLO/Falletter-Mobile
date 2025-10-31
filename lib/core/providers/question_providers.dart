@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 final currentQuestionIndexProvider = StateProvider<int>((ref) => 0);
 final totalQuestionsProvider = Provider<int>((ref) => 5);

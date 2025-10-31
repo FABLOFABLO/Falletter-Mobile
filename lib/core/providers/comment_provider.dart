@@ -1,4 +1,6 @@
-import 'package:flutter_riverpod/legacy.dart';
+
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final commentProvider = StateNotifierProvider<CommentNotifier, Map<int, List<Map<String, dynamic>>>>((ref) {
   return CommentNotifier();
