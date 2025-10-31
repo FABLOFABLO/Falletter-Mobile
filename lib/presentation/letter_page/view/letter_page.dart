@@ -45,14 +45,14 @@ class _LetterPageState extends ConsumerState<LetterPage> {
   String get senderInfo {
     final text = _titleController.text.trim();
     if (text.isEmpty) return '';
-    final parts = text.split(' ');
-    if (parts.length != 2) return '';
+    final parts = text.split(RegExp(r'\s+'));
+    if (parts.length < 2) return '';
     final studentId = parts[0];
     final name = parts[1];
     return '$studentId $name';
   }
 
-  void _showSubmissionOverlay(ThemeColors themeColors) {
+  void _showSubmissionOverlay(ThemeColors themeColors, String receiver) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -65,7 +65,7 @@ class _LetterPageState extends ConsumerState<LetterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '$senderInfo에게\n레터를 전송할게요.',
+                  '$receiver에게\n레터를 전송할게요.',
                   style: FalletterTextStyle.body1,
                   textAlign: TextAlign.center,
                 ),
@@ -113,7 +113,7 @@ class _LetterPageState extends ConsumerState<LetterPage> {
       content: _contentController.text.trim(),
     );
 
-    _showSubmissionOverlay(themeColors);
+    _showSubmissionOverlay(themeColors, senderInfo);
 
     _titleController.clear();
     _contentController.clear();
