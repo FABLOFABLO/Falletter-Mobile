@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/sign_up_indicator.dart';
@@ -5,12 +8,11 @@ import 'package:falletter/core/components/icon/field_icon.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/providers/signup_provider.dart';
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/presentation/main_app.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
+import 'package:falletter/services/auth_service.dart';
 
 class PasswordPage extends ConsumerStatefulWidget {
   const PasswordPage({super.key});
@@ -21,24 +23,63 @@ class PasswordPage extends ConsumerStatefulWidget {
 
 class _PasswordPageState extends ConsumerState<PasswordPage> {
   final TextEditingController _pwController = TextEditingController();
-  bool isPasswordValid = false;
+  bool _isLoading = false;
   bool _obscureText = true;
+  bool isPasswordValid = false;
 
   @override
   void initState() {
     super.initState();
     SignUpFlow.currentStep = 5;
-    _pwController.addListener(_onPasswordChanged);
+    _pwController.addListener(_validatePassword);
   }
 
-  void _onPasswordChanged() {
+  @override
+  void dispose() {
+    _pwController.dispose();
+    super.dispose();
+  }
+
+  void _validatePassword() {
     setState(() {
-      // TODO: 실제 비밀번호 유효성 검사
       isPasswordValid = _pwController.text.isNotEmpty;
     });
   }
 
-  void _showSuccessDialog(ThemeColors themeColors) async {
+  Future<void> _signUp(ThemeColors themeColors) async {
+    final signUpState = ref.read(signUpProvider);
+    final authService = AuthService();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await authService.signUp(
+        email: signUpState.email!,
+        password: _pwController.text.trim(),
+        schoolNumber: signUpState.schoolNumber!,
+        name: signUpState.name ?? '유저',
+        gender: signUpState.gender!,
+      );
+
+      if (!mounted) return;
+
+      if (result == 'OK') {
+        await _showSuccessDialog(themeColors);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(result)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('회원가입 실패: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _showSuccessDialog(ThemeColors themeColors) async {
     await showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -61,14 +102,13 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
               ),
               Center(
                 child: Lottie.asset(
-                  themeColors.signupLottie,
+                  themeColors.signupLottie, // 테마별 Lottie 적용
                   width: 400,
                   height: 400,
                   repeat: false,
                   onLoaded: (composition) async {
-                    await Future.delayed(composition.duration);
-
-                    if (mounted) {
+                    await Future.delayed(const Duration(seconds: 2));
+                    if (dialogContext.mounted) {
                       Navigator.pop(dialogContext);
                     }
                   },
@@ -86,16 +126,6 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
         MaterialPageRoute(builder: (_) => const MainApp()),
       );
     }
-  }
-
-  void _goToNextStep(ThemeColors themeColors) {
-    _showSuccessDialog(themeColors);
-  }
-
-  @override
-  void dispose() {
-    _pwController.dispose();
-    super.dispose();
   }
 
   @override
@@ -149,9 +179,12 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
             child: CustomElevatedButton(
               width: double.infinity,
-              onPressed:
-              isPasswordValid ? () => _goToNextStep(themeColors) : null,
-              child: const Text('회원가입'),
+              onPressed: isPasswordValid && !_isLoading
+                  ? () => _signUp(themeColors)
+                  : null,
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('회원가입'),
             ),
           ),
         ],
