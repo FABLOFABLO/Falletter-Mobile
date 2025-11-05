@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:falletter/core/providers/roulette_provider.dart';
+import 'package:falletter/core/providers/reward_provider.dart';
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/presentation/attendance_page/view/roulette_reward_page.dart';
 import 'package:falletter/presentation/attendance_page/widget/roulette_pointer.dart';
@@ -101,20 +101,21 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
     final type = reward.type;
     final amount = reward.amount;
 
+    final rewardNotifier = ref.read(rewardProvider.notifier);
+
     if (type == RewardType.brick) {
-      ref.read(brickCountProvider.notifier).state += amount;
+      rewardNotifier.addBricks(amount);
     } else {
-      ref.read(letterCountProvider.notifier).state += amount;
+      rewardNotifier.addLetters(amount);
     }
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (_) => RouletteRewardPage(
-              type: type,
-              amount: amount,
-            ),
+        builder: (_) => RouletteRewardPage(
+          type: type,
+          amount: amount,
+        ),
       ),
     );
   }
