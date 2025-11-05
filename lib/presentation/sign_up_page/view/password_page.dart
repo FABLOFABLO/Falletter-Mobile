@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/sign_up_indicator.dart';
-import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/components/icon/field_icon.dart';
+import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/providers/signup_provider.dart';
@@ -71,9 +71,8 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('회원가입 실패: $e')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('회원가입 실패: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

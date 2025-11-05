@@ -1,9 +1,12 @@
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/presentation/answer_page/components/circle_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TimerView extends StatelessWidget {
+class TimerView extends ConsumerWidget {
   final Duration countdown;
   final Duration initialCountdown;
 
@@ -14,7 +17,9 @@ class TimerView extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
     final minutes = countdown.inMinutes.remainder(60).toString().padLeft(2, '0');
     final hours = countdown.inHours.toString().padLeft(2, '0');
     final progress = initialCountdown.inSeconds > 0
@@ -46,11 +51,9 @@ class TimerView extends StatelessWidget {
                 painter: CircleProgress(
                   progress: progress,
                   strokeWidth: 10,
-                  gradient: FalletterGradient.vertical(
-                    FalletterColor.blueGradient,
+                  gradient: themeColors.timer,
                   ),
                 ),
-              ),
               Container(
                 width: 190,
                 height: 190,

@@ -6,7 +6,8 @@ class GenderButton extends StatelessWidget {
   final String label;
   final IconData? icon;
   final Widget? iconWidget;
-  final Color iconColor;
+  final Color? iconColor;
+  final Gradient? gradient;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -15,7 +16,8 @@ class GenderButton extends StatelessWidget {
     required this.label,
     this.icon,
     this.iconWidget,
-    required this.iconColor,
+    this.iconColor,
+    this.gradient,
     required this.isSelected,
     required this.onTap,
   });
@@ -39,7 +41,23 @@ class GenderButton extends StatelessWidget {
               child: SizedBox(
                 width: 100,
                 height: 100,
-                child: iconWidget ?? Icon(icon, color: iconColor, size: 100),
+                child: iconWidget ??
+                    (gradient != null
+                        ? ShaderMask(
+                      shaderCallback: (bounds) => gradient!.createShader(bounds),
+                      child: Icon(
+                        icon,
+                        color: Colors.white,
+                        size: 100,
+                        fill: 1,
+                      ),
+                    )
+                        : Icon(
+                      icon,
+                      color: iconColor,
+                      size: 100,
+                      fill: 1,
+                    )),
               ),
             ),
             Padding(

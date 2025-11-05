@@ -1,5 +1,7 @@
+import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/presentation/main_app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/icon/field_icon.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
@@ -7,14 +9,14 @@ import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/presentation/sign_up_page/view/gender_page.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _pwController = TextEditingController();
 
@@ -45,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() {
-    // TODO: 로그인 처리 코드
     debugPrint(
       '로그인 버튼 클릭: 이메일=${_emailController.text}, 비밀번호=${_pwController.text}',
     );
@@ -60,7 +61,6 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _emailController.removeListener(_updateButtonState);
     _pwController.removeListener(_updateButtonState);
-
     _emailController.dispose();
     _pwController.dispose();
     super.dispose();
@@ -68,6 +68,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedTheme = ref.watch(themeProvider);
+
     Widget? suffixIcon;
     if (_pwController.text.isNotEmpty) {
       if (_obscureText) {

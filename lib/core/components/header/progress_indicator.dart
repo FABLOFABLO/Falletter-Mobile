@@ -1,8 +1,11 @@
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProgressHeader extends StatelessWidget {
+class ProgressHeader extends ConsumerWidget {
   final int currentIndex;
   final int totalCount;
 
@@ -13,11 +16,13 @@ class ProgressHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final progress = currentIndex / totalCount;
+    final selectedTheme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[selectedTheme]!;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 70),
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 27),
       child: Row(
         children: [
           Expanded(
@@ -35,12 +40,7 @@ class ProgressHeader extends StatelessWidget {
                   child: Container(
                     height: 12,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF86FBFF),
-                          Color(0xFF93AAFF),
-                        ],
-                      ),
+                      gradient: themeColors.progressIndicator,
                       borderRadius: BorderRadius.circular(100),
                     ),
                   ),
