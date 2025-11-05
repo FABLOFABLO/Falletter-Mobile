@@ -3,7 +3,7 @@ String formatSentTime(DateTime? sentTime) {
 
   if (sentTime == null) {
     return '전송 중...';
-  };
+  }
 
   final now = DateTime.now();
   final difference = now.difference(sentTime);
