@@ -1,0 +1,144 @@
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:falletter/core/components/modal/letter_modal.dart';
+import 'package:falletter/core/components/text/gradient_text.dart';
+import 'package:falletter/core/constants/color.dart';
+import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/presentation/main_app.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
+
+final backgroundOverlay = FalletterColor.black.withAlpha(204);
+
+class RouletteRewardPage extends ConsumerStatefulWidget {
+  final String type;
+  final int amount;
+
+  const RouletteRewardPage({
+    super.key,
+    required this.type,
+    required this.amount,
+  });
+
+  @override
+  ConsumerState<RouletteRewardPage> createState() => _RouletteRewardPageState();
+}
+
+class _RouletteRewardPageState extends ConsumerState<RouletteRewardPage> {
+  bool _showCheckLetter = false;
+  bool _isModalVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 2), _checkReceivedLetter);
+    });
+  }
+
+  Future<void> _checkReceivedLetter() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    setState(() => _showCheckLetter = true);
+  }
+
+  void _showLetterModal() {
+    setState(() => _isModalVisible = true);
+  }
+
+  void _closeModal() {
+    setState(() => _isModalVisible = false);
+    Future.delayed(const Duration(milliseconds: 200), _goToMainPage);
+  }
+
+  void _goToMainPage() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const MainApp()),
+      (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[theme]!;
+    final isBrick = widget.type == 'brick';
+    final rewardName = isBrick ? '브릭' : '레터';
+    final iconPath = isBrick ? themeColors.brickSvg : themeColors.letterSvg;
+
+    return Scaffold(
+      backgroundColor: backgroundOverlay,
+      body: Center(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          child:
+              _showCheckLetter
+                  ? Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: _showLetterModal,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '정지윤님께\n누군가의 편지가 도착했어요',
+                              style: FalletterTextStyle.body1,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+                            SvgPicture.asset(
+                              themeColors.checkLetterSvg,
+                              width: 200,
+                              height: 200,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "터치해서 열어보세요",
+                              style: FalletterTextStyle.body3.copyWith(
+                                color: FalletterColor.gray200,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_isModalVisible)
+                        AnimatedOpacity(
+                          opacity: _isModalVisible ? 1 : 0,
+                          duration: const Duration(milliseconds: 300),
+                          child: Container(
+                            color: backgroundOverlay,
+                            alignment: Alignment.center,
+                            child: LetterModal(
+                              dear: '2114 정지윤에게',
+                              content: '안녕! 오늘도 고생 많았어 :)',
+                              bottom: '누군가가 보냄',
+                              onClose: _closeModal,
+                            ),
+                          ),
+                        ),
+                    ],
+                  )
+                  : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('출석체크 보상', style: FalletterTextStyle.title3),
+                      GradientText(
+                        '$rewardName ${widget.amount}개 획득',
+                        style: FalletterTextStyle.title1,
+                        gradient: themeColors.text,
+                      ),
+                      const SizedBox(height: 32),
+                      SvgPicture.asset(
+                        iconPath,
+                        width: isBrick ? 200 : 150,
+                        height: isBrick ? 200 : 150,
+                      ),
+                    ],
+                  ),
+        ),
+      ),
+    );
+  }
+}
