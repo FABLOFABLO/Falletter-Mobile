@@ -8,11 +8,12 @@ import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/presentation/main_app.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
+import 'package:falletter/presentation/attendance_page/widget/roulette.dart'; // RewardType 사용
 
 final backgroundOverlay = FalletterColor.black.withAlpha(204);
 
 class RouletteRewardPage extends ConsumerStatefulWidget {
-  final String type;
+  final RewardType type;
   final int amount;
 
   const RouletteRewardPage({
@@ -63,7 +64,8 @@ class _RouletteRewardPageState extends ConsumerState<RouletteRewardPage> {
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final themeColors = appThemeColors[theme]!;
-    final isBrick = widget.type == 'brick';
+
+    final isBrick = widget.type == RewardType.brick;
     final rewardName = isBrick ? '브릭' : '레터';
     final iconPath = isBrick ? themeColors.brickSvg : themeColors.letterSvg;
 

@@ -9,6 +9,15 @@ import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+enum RewardType { brick, letter }
+
+class Reward {
+  final RewardType type;
+  final int amount;
+
+  const Reward(this.type, this.amount);
+}
+
 class RouletteWheel extends ConsumerStatefulWidget {
   const RouletteWheel({super.key});
 
@@ -23,15 +32,15 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
   bool isSpinning = false;
   int selectedIndex = 0;
 
-  final List<Map<String, dynamic>> rewards = [
-    {'type': 'brick', 'amount': 1},
-    {'type': 'letter', 'amount': 1},
-    {'type': 'brick', 'amount': 2},
-    {'type': 'letter', 'amount': 2},
-    {'type': 'brick', 'amount': 2},
-    {'type': 'letter', 'amount': 1},
-    {'type': 'letter', 'amount': 2},
-    {'type': 'brick', 'amount': 1},
+  final List<Reward> rewards = const [
+    Reward(RewardType.brick, 1),
+    Reward(RewardType.letter, 1),
+    Reward(RewardType.brick, 2),
+    Reward(RewardType.letter, 2),
+    Reward(RewardType.brick, 2),
+    Reward(RewardType.letter, 1),
+    Reward(RewardType.letter, 2),
+    Reward(RewardType.brick, 1),
   ];
 
   @override
@@ -52,15 +61,28 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
 
   void spinRoulette() {
     if (isSpinning) return;
-
     setState(() => isSpinning = true);
+
+    final targetIndex = _getRandomIndex();
+    final totalRotation = _calculateRotation(targetIndex);
+
+    _animateRoulette(totalRotation, targetIndex);
+  }
+
+  int _getRandomIndex() {
     final random = Random();
-    final targetIndex = random.nextInt(rewards.length);
+    return random.nextInt(rewards.length);
+  }
+
+  double _calculateRotation(int targetIndex) {
+    final random = Random();
     final spins = 5 + random.nextDouble() * 2;
     final sectionAngle = 360.0 / rewards.length;
     final targetAngle = targetIndex * sectionAngle;
-    final totalRotation = (spins * 360) + (360 - targetAngle) + (sectionAngle / 2);
+    return (spins * 360) + (360 - targetAngle) + (sectionAngle / 2);
+  }
 
+  void _animateRoulette(double totalRotation, int targetIndex) {
     _animation = Tween<double>(begin: 0, end: totalRotation).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
@@ -76,10 +98,10 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
 
   void _applyReward() {
     final reward = rewards[selectedIndex];
-    final type = reward['type'];
-    final amount = reward['amount'] as int;
+    final type = reward.type;
+    final amount = reward.amount;
 
-    if (type == 'brick') {
+    if (type == RewardType.brick) {
       ref.read(brickCountProvider.notifier).state += amount;
     } else {
       ref.read(letterCountProvider.notifier).state += amount;
@@ -87,7 +109,13 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => RouletteRewardPage(type: type, amount: amount)),
+      MaterialPageRoute(
+        builder:
+            (_) => RouletteRewardPage(
+              type: type,
+              amount: amount,
+            ),
+      ),
     );
   }
 
@@ -109,7 +137,10 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
                 angle: _animation.value * pi / 180,
                 child: CustomPaint(
                   size: const Size(320, 320),
-                  painter: _RoulettePainter(count: rewards.length, themeColors: themeColors),
+                  painter: _RoulettePainter(
+                    count: rewards.length,
+                    themeColors: themeColors,
+                  ),
                 ),
               );
             },
@@ -117,7 +148,10 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
         ),
         Positioned(
           top: 4,
-          child: CustomPaint(size: const Size(20, 40), painter: PointerPainter()),
+          child: CustomPaint(
+            size: const Size(20, 40),
+            painter: PointerPainter(),
+          ),
         ),
         GestureDetector(
           onTap: isSpinning ? null : spinRoulette,
@@ -129,7 +163,12 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
               gradient: themeColors.button,
             ),
             child: Center(
-              child: Text('GO', style: FalletterTextStyle.title1.copyWith(color: FalletterColor.black)),
+              child: Text(
+                'GO',
+                style: FalletterTextStyle.title1.copyWith(
+                  color: FalletterColor.black,
+                ),
+              ),
             ),
           ),
         ),
@@ -152,16 +191,24 @@ class _RoulettePainter extends CustomPainter {
     final colors = [FalletterColor.gray800, FalletterColor.gray900];
 
     for (int i = 0; i < count; i++) {
-      final paint = Paint()
-        ..color = colors[i % colors.length]
-        ..style = PaintingStyle.fill;
-      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), i * sweep - pi / 2, sweep, true, paint);
+      final paint =
+          Paint()
+            ..color = colors[i % colors.length]
+            ..style = PaintingStyle.fill;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        i * sweep - pi / 2,
+        sweep,
+        true,
+        paint,
+      );
     }
 
-    final border = Paint()
-      ..color = FalletterColor.gray200
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5;
+    final border =
+        Paint()
+          ..color = FalletterColor.gray200
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5;
     canvas.drawCircle(center, radius, border);
   }
 
