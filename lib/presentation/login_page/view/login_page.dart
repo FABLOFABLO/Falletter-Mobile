@@ -29,12 +29,50 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.initState();
     _emailController.addListener(_updateButtonState);
     _pwController.addListener(_updateButtonState);
+  }
 
-    Future.microtask(() {
-      ref.listen<AsyncValue<Map<String, dynamic>?>>(signInStateProvider, (
-        previous,
-        next,
-      ) {
+  void _updateButtonState() {
+    final emailInput = _emailController.text.trim();
+    final pwInput = _pwController.text.trim();
+
+    final newButtonState = emailInput.isNotEmpty && pwInput.isNotEmpty;
+
+    if (isButtonEnabled != newButtonState) {
+      setState(() {
+        isButtonEnabled = newButtonState;
+      });
+    }
+  }
+
+  Future<void> _login() async {
+    final rawEmail = _emailController.text.trim();
+    final email = rawEmail.contains('@')
+        ? rawEmail
+        : '$rawEmail@dsm.hs.kr';
+    final password = _pwController.text.trim();
+
+    await ref.read(signInStateProvider.notifier).signIn(
+      email: email,
+      password: password,
+    );
+  }
+
+  @override
+  void dispose() {
+    _emailController.removeListener(_updateButtonState);
+    _pwController.removeListener(_updateButtonState);
+    _emailController.dispose();
+    _pwController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final signInState = ref.watch(signInStateProvider);
+
+    ref.listen<AsyncValue<Map<String, dynamic>?>>(
+      signInStateProvider,
+          (previous, next) {
         next.when(
           data: (data) {
             if (data != null && data['access_token'] != null) {
@@ -51,50 +89,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           },
           loading: () {},
         );
-      });
-    });
-  }
-
-  void _updateButtonState() {
-    final emailInput = _emailController.text.trim();
-    final pwInput = _pwController.text.trim();
-
-    final isIdValid = RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(emailInput);
-    final isPwValid = pwInput.isNotEmpty;
-    final newButtonState = isIdValid && emailInput.isNotEmpty && isPwValid;
-
-    if (isButtonEnabled != newButtonState) {
-      setState(() {
-        isButtonEnabled = newButtonState;
-      });
-    }
-  }
-
-  Future<void> _login() async {
-    final rawEmail = _emailController.text.trim();
-    final email = rawEmail.contains('@') ? rawEmail : '$rawEmail@dsm.hs.kr';
-    final password = _pwController.text.trim();
-
-    await ref
-        .read(signInStateProvider.notifier)
-        .signIn(
-          email: email,
-          password: password,
-        );
-  }
-
-  @override
-  void dispose() {
-    _emailController.removeListener(_updateButtonState);
-    _pwController.removeListener(_updateButtonState);
-    _emailController.dispose();
-    _pwController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final signInState = ref.watch(signInStateProvider);
+      },
+    );
 
     Widget? suffixIcon;
     if (_pwController.text.isNotEmpty) {
@@ -188,12 +184,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   CustomElevatedButton(
                     width: double.infinity,
                     onPressed: isButtonEnabled && !isLoading ? _login : null,
-                    child:
-                        isLoading
-                            ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                            : const Text('로그인하기'),
+                    child: isLoading
+                        ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                        : const Text('로그인하기'),
                   ),
                 ],
               ),
