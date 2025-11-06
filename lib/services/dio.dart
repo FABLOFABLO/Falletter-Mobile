@@ -14,6 +14,7 @@ class DioClient {
       BaseOptions(
         baseUrl: ApiEndPoints.baseUrl,
         contentType: Headers.jsonContentType,
+        responseType: ResponseType.json,
       ),
     );
   }
