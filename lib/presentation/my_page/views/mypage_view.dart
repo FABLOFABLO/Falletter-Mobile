@@ -24,113 +24,143 @@ class MypageView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedTheme = ref.watch(themeProvider);
     final themeColors = appThemeColors[selectedTheme]!;
-    final nickname = ref.watch(currentUserNicknameProvider);
-    final attendanceDays = ref.watch(currentUserAttendanceProvider);
+    final userInfoAsync = ref.watch(userInfoProvider);
+    final userService = ref.read(userServiceProvider);
 
     void _showLogoutConfirmDialog(BuildContext dialogContext) {
       showDialog(
         context: dialogContext,
         barrierDismissible: false,
-        builder: (BuildContext context) => DefaultModal(
-          title: '로그아웃',
-          description:
-          '기기내 계정에서 로그아웃 할 수 있어요.\n다음 이용 시에는 다시 로그인 해야합니다.\n정말 로그아웃하시겠어요?',
-          leftText: '취소',
-          rightText: '로그아웃',
-          onLeftPressed: () => Navigator.of(context).pop(),
-          onRightPressed: () {
-            Navigator.of(context).pop();
-            ref.read(currentUserNicknameProvider.notifier).state = '';
-            ref.read(currentUserAttendanceProvider.notifier).state = 0;
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const SplashPage()),
-                  (route) => false,
-            );
-          },
-        ),
+        builder: (BuildContext context) =>
+            DefaultModal(
+              title: '로그아웃',
+              description:
+              '기기내 계정에서 로그아웃 할 수 있어요.\n다음 이용 시에는 다시 로그인 해야합니다.\n정말 로그아웃하시겠어요?',
+              leftText: '취소',
+              rightText: '로그아웃',
+              onLeftPressed: () => Navigator.of(context).pop(),
+              onRightPressed: () async {
+                Navigator.of(context).pop();
+
+                try {
+                  await userService.logout();
+                  ref.invalidate(userInfoProvider);
+
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const SplashPage()),
+                          (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('로그아웃 실패: $e')),
+                    );
+                  }
+                }
+              },
+            ),
       );
     }
 
-    return SingleChildScrollView(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 60),
-            _ProfileHeader(nickname: nickname, attendanceDays: attendanceDays),
-            const SizedBox(height: 12),
+    return userInfoAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => Center(child: Text('에러 발생: $error')),
+      data: (user) {
+        final nickname = user['name'] ?? '유저';
+        final attendanceDays = user['attendanceDays'] ?? 0;
 
-            // <-- 수정된 부분: item: 으로 Widget을 전달하도록 변경 -->
-            Row(
+        return SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: ItemBox(
-                    item: SvgPicture.asset(
-                      themeColors.letterSvg,
-                      width: 36,
-                      height: 25,
-                    ),
-                    itemKey: 'letter',
-                  ),
+                const SizedBox(height: 60),
+                _ProfileHeader(
+                  nickname: nickname,
+                  attendanceDays: attendanceDays,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ItemBox(
-                    item: SvgPicture.asset(
-                      themeColors.brickSvg,
-                      width: 36,
-                      height: 38,
-                    ),
-                    itemKey: 'brick',
-                  ),
-                ),
-              ],
-            ),
+                const SizedBox(height: 12),
 
-            const SizedBox(height: 20),
-            TitleSection(
-              title: '내역',
-              items: ['보낸 레터', '받은 레터', '브릭 사용 내역'],
-              onTaps: [
-                    () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SentLetterView(),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ItemBox(
+                        item: SvgPicture.asset(
+                          themeColors.letterSvg,
+                          width: 36,
+                          height: 25,
+                        ),
+                        itemKey: 'letter',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ItemBox(
+                        item: SvgPicture.asset(
+                          themeColors.brickSvg,
+                          width: 36,
+                          height: 38,
+                        ),
+                        itemKey: 'brick',
+                      ),
+                    ),
+                  ],
                 ),
-                    () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ReceiveLetterView(),
-                  ),
+
+                const SizedBox(height: 20),
+                TitleSection(
+                  title: '내역',
+                  items: ['보낸 레터', '받은 레터', '브릭 사용 내역'],
+                  onTaps: [
+                        () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SentLetterView(),
+                          ),
+                        ),
+                        () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ReceiveLetterView(),
+                          ),
+                        ),
+                        () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const UsedBrickView(),
+                          ),
+                        ),
+                  ],
                 ),
-                    () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UsedBrickView(),
-                  ),
+                TitleSection(
+                  title: '시스템',
+                  items: ['테마 설정'],
+                  onTaps: [
+                        () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ThemeView(),
+                          ),
+                        ),
+                  ],
+                ),
+                TitleSection(
+                  title: '계정',
+                  items: ['로그아웃'],
+                  onTaps: [() => _showLogoutConfirmDialog(context)],
                 ),
               ],
             ),
-            TitleSection(
-              title: '시스템',
-              items: ['테마 설정'],
-              onTaps: [
-                    () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ThemeView()),
-                ),
-              ],
-            ),
-            TitleSection(
-              title: '계정',
-              items: ['로그아웃'],
-              onTaps: [() => _showLogoutConfirmDialog(context)],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -148,6 +178,7 @@ class _ProfileHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedTheme = ref.watch(themeProvider);
     final themeColors = appThemeColors[selectedTheme]!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Container(

@@ -31,27 +31,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _pwController.addListener(_updateButtonState);
 
     Future.microtask(() {
-      ref.listen<AsyncValue<Map<String, dynamic>?>>(
-        signInStateProvider,
-            (previous, next) {
-          next.when(
-            data: (data) {
-              if (data != null && data['access_token'] != null) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MainApp()),
-                );
-              }
-            },
-            error: (error, stack) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('로그인 실패: ${error.toString()}')),
+      ref.listen<AsyncValue<Map<String, dynamic>?>>(signInStateProvider, (previous, next) {
+        next.when(
+          data: (data) {
+            if (data != null && data['access_token'] != null) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MainApp()),
               );
-            },
-            loading: () {},
-          );
-        },
-      );
+            }
+          },
+          error: (error, stack) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('로그인 실패: ${error.toString()}')),
+            );
+          },
+          loading: () {},
+        );
+      });
     });
   }
 
@@ -72,9 +69,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _login() async {
     final rawEmail = _emailController.text.trim();
-    final email = rawEmail.contains('@')
-        ? rawEmail
-        : '$rawEmail@dsm.hs.kr';
+    final email = rawEmail.contains('@') ? rawEmail : '$rawEmail@dsm.hs.kr';
     final password = _pwController.text.trim();
 
     await ref.read(signInStateProvider.notifier).signIn(
@@ -189,9 +184,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     width: double.infinity,
                     onPressed: isButtonEnabled && !isLoading ? _login : null,
                     child: isLoading
-                        ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
+                        ? const CircularProgressIndicator(color: Colors.white)
                         : const Text('로그인하기'),
                   ),
                 ],
