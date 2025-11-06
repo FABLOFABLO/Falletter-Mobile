@@ -122,6 +122,9 @@ class AuthService {
           'email': email,
           'password': password,
         },
+        options: Options(headers: {
+          'Content-Type': 'application/json',
+        }),
       );
       switch (response.statusCode) {
         case 200:
