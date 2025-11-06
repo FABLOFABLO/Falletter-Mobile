@@ -1,4 +1,5 @@
-import 'package:falletter/core/providers/theme_provider.dart';
+import 'dart:async';
+import 'package:falletter/core/providers/signin_provider.dart';
 import 'package:falletter/presentation/main_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +29,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.initState();
     _emailController.addListener(_updateButtonState);
     _pwController.addListener(_updateButtonState);
+
+    Future.microtask(() {
+      ref.listen<AsyncValue<Map<String, dynamic>?>>(
+        signInStateProvider,
+            (previous, next) {
+          next.when(
+            data: (data) {
+              if (data != null && data['access_token'] != null) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MainApp()),
+                );
+              }
+            },
+            error: (error, stack) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('로그인 실패: ${error.toString()}')),
+              );
+            },
+            loading: () {},
+          );
+        },
+      );
+    });
   }
 
   void _updateButtonState() {
@@ -36,7 +61,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     final isIdValid = RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(emailInput);
     final isPwValid = pwInput.isNotEmpty;
-
     final newButtonState = isIdValid && emailInput.isNotEmpty && isPwValid;
 
     if (isButtonEnabled != newButtonState) {
@@ -46,14 +70,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  void _login() {
-    debugPrint(
-      '로그인 버튼 클릭: 이메일=${_emailController.text}, 비밀번호=${_pwController.text}',
-    );
+  Future<void> _login() async {
+    final rawEmail = _emailController.text.trim();
+    final email = rawEmail.contains('@')
+        ? rawEmail
+        : '$rawEmail@dsm.hs.kr';
+    final password = _pwController.text.trim();
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const MainApp()),
+    await ref.read(signInStateProvider.notifier).signIn(
+      email: email,
+      password: password,
     );
   }
 
@@ -68,7 +94,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedTheme = ref.watch(themeProvider);
+    final signInState = ref.watch(signInStateProvider);
 
     Widget? suffixIcon;
     if (_pwController.text.isNotEmpty) {
@@ -83,6 +109,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     }
 
+    final isLoading = signInState.isLoading;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -94,8 +122,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('로그인하고\n팔레터 사용하기',
-                          style: FalletterTextStyle.title2),
+                      Text('로그인하고\n팔레터 사용하기', style: FalletterTextStyle.title2),
                       const SizedBox(height: 40),
                       CustomTextFormField(
                         controller: _emailController,
@@ -150,16 +177,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                             );
                           },
-                          child: Text('회원가입',
-                              style: FalletterTextStyle.body3),
+                          child: Text(
+                            '회원가입',
+                            style: FalletterTextStyle.body3,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   CustomElevatedButton(
                     width: double.infinity,
-                    onPressed: isButtonEnabled ? _login : null,
-                    child: const Text('로그인하기'),
+                    onPressed: isButtonEnabled && !isLoading ? _login : null,
+                    child: isLoading
+                        ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                        : const Text('로그인하기'),
                   ),
                 ],
               ),
