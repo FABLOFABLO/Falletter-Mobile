@@ -1,29 +1,44 @@
-import 'package:falletter/core/components/button/elevated_button.dart';
-import 'package:falletter/core/constants/text_style.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:falletter/core/providers/signup_provider.dart';
 import 'package:falletter/presentation/sign_up_page/view/grade_page.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:falletter/core/constants/color.dart';
-import 'package:falletter/core/components/header/header.dart';
+import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/components/button/gender_button.dart';
+import 'package:falletter/core/components/button/elevated_button.dart';
+import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/sign_up_indicator.dart';
 
-class GenderPage extends StatefulWidget {
+class GenderPage extends ConsumerStatefulWidget {
   const GenderPage({super.key});
 
   @override
-  State<GenderPage> createState() => _GenderPageState();
+  ConsumerState<GenderPage> createState() => _GenderPageState();
 }
 
-class _GenderPageState extends State<GenderPage> {
+class _GenderPageState extends ConsumerState<GenderPage> {
   String? selected;
 
   void _goToNextStep() {
-    SignUpFlow.nextStep();
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const GradePage()),
-    );
+    if (selected != null) {
+      late String genderValue;
+      switch (selected) {
+        case '남성':
+          genderValue = 'MALE';
+          break;
+        case '여성':
+          genderValue = 'FEMALE';
+          break;
+      }
+
+      ref.read(signUpProvider.notifier).setGender(genderValue);
+      SignUpFlow.nextStep();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const GradePage()),
+      );
+    }
   }
 
   @override
@@ -38,23 +53,20 @@ class _GenderPageState extends State<GenderPage> {
       body: Column(
         children: [
           const SafeArea(
-            child: Header(
-              showBackButton: true,
-              rightWidget: SignUpIndicator(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('성별을 선택해주세요.', style: FalletterTextStyle.title2),
-            ),
+            child: Header(showBackButton: true, rightWidget: SignUpIndicator()),
           ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '성별을 선택해주세요.',
+                      style: FalletterTextStyle.title2,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     children: [
@@ -79,30 +91,7 @@ class _GenderPageState extends State<GenderPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GenderButton(
-                          label: '기타',
-                          iconColor: FalletterColor.gray100,
-                          isSelected: selected == '기타',
-                          onTap: () => setState(() => selected = '기타'),
-                          iconWidget: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Symbols.man, color: FalletterColor.gray100, size: 50),
-                              Icon(Symbols.woman, color: FalletterColor.gray100, size: 50),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      const Expanded(child: SizedBox()),
-                    ],
-                  ),
                   const Spacer(),
-                  const SizedBox(height: 40),
                   CustomElevatedButton(
                     width: double.infinity,
                     onPressed: selected != null ? _goToNextStep : null,

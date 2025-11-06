@@ -3,13 +3,21 @@ import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/constants/color.dart';
+import 'package:falletter/core/providers/signup_provider.dart';
 import 'package:falletter/presentation/sign_up_page/view/password_page.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/sign_up_indicator.dart';
+import 'package:falletter/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class VerifyPage extends StatefulWidget {
-  const VerifyPage({super.key});
+  final String email;
+
+  const VerifyPage({
+    super.key,
+    required this.email,
+  });
 
   @override
   State<VerifyPage> createState() => _VerifyPageState();
@@ -20,6 +28,7 @@ class _VerifyPageState extends State<VerifyPage> {
   Timer? _timer;
   int _secondsRemaining = 300;
   bool isButtonEnabled = false;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -38,7 +47,8 @@ class _VerifyPageState extends State<VerifyPage> {
 
   void _onCodeChanged() {
     setState(() {
-      isButtonEnabled = _verifyController.text.trim().isNotEmpty && _secondsRemaining > 0;
+      isButtonEnabled =
+          _verifyController.text.trim().isNotEmpty && _secondsRemaining > 0;
     });
   }
 
@@ -63,12 +73,33 @@ class _VerifyPageState extends State<VerifyPage> {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  void _verifyCode() {
-    SignUpFlow.nextStep();
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const PasswordPage()),
+  Future<void> _verifyCode() async {
+    final code = _verifyController.text.trim();
+    final authService = AuthService();
+
+    setState(() => isLoading = true);
+    final result = await authService.verifyCodeMatch(
+      email: widget.email,
+      code: code,
     );
+    setState(() => isLoading = false);
+
+    if (!mounted) return;
+
+    if (result == 'OK') {
+      final container = ProviderScope.containerOf(context, listen: false);
+      container.read(signUpProvider.notifier).setEmail(widget.email);
+
+      SignUpFlow.nextStep();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PasswordPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result)),
+      );
+    }
   }
 
   @override
@@ -133,8 +164,11 @@ class _VerifyPageState extends State<VerifyPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: CustomElevatedButton(
               width: double.infinity,
-              onPressed: isButtonEnabled ? _verifyCode : null,
-              child: const Text('다음'),
+              onPressed: isButtonEnabled && !isLoading ? _verifyCode : null,
+              child:
+                  isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('다음'),
             ),
           ),
           const SizedBox(height: 40),

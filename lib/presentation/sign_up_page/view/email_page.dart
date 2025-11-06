@@ -2,11 +2,11 @@ import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/sign_up_indicator.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
-import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/components/icon/field_icon.dart';
+import 'package:falletter/services/auth_service.dart';
 import 'package:falletter/presentation/sign_up_page/view/verify_page.dart';
 import 'package:flutter/material.dart';
-import 'package:falletter/core/components/icon/field_icon.dart';
 
 class EmailPage extends StatefulWidget {
   const EmailPage({super.key});
@@ -18,13 +18,7 @@ class EmailPage extends StatefulWidget {
 class _EmailPageState extends State<EmailPage> {
   final TextEditingController _emailController = TextEditingController();
   bool isButtonEnabled = false;
-
-  void _goToNextStep() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const VerifyPage()),
-    );
-  }
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -35,7 +29,6 @@ class _EmailPageState extends State<EmailPage> {
 
   void _onEmailChanged() {
     final input = _emailController.text.trim();
-
     final isValid = RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(input);
 
     setState(() {
@@ -50,9 +43,29 @@ class _EmailPageState extends State<EmailPage> {
     super.dispose();
   }
 
-  void _sendVerificationCode() {
-    // UI만 구현하므로 실제 전송 로직은 제거
-    _goToNextStep();
+  Future<void> _sendVerificationCode() async {
+    final emailInput = _emailController.text.trim();
+    final fullEmail = '$emailInput@dsm.hs.kr';
+    final authService = AuthService();
+
+    setState(() => isLoading = true);
+    final result = await authService.sendVerificationCode(fullEmail);
+    setState(() => isLoading = false);
+
+    if (!mounted) return;
+
+    if (result == 'OK') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VerifyPage(email: fullEmail),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result)),
+      );
+    }
   }
 
   @override
@@ -81,10 +94,6 @@ class _EmailPageState extends State<EmailPage> {
                     child: CustomTextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        hintText: '이메일을 입력해주세요',
-                        hintStyle: FalletterTextStyle.placeholder.copyWith(
-                          color: FalletterColor.gray700,
-                        ),
                         suffixIcon: FieldIcons.emailText(),
                       ),
                     ),
@@ -97,8 +106,12 @@ class _EmailPageState extends State<EmailPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
             child: CustomElevatedButton(
               width: double.infinity,
-              onPressed: isButtonEnabled ? _sendVerificationCode : null,
-              child: const Text('인증번호 전송'),
+              onPressed:
+                  isButtonEnabled && !isLoading ? _sendVerificationCode : null,
+              child:
+                  isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('인증번호 전송'),
             ),
           ),
         ],
