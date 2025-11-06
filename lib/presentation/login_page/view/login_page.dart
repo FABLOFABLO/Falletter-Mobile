@@ -29,39 +29,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.initState();
     _emailController.addListener(_updateButtonState);
     _pwController.addListener(_updateButtonState);
-
-    Future.microtask(() {
-      ref.listen<AsyncValue<Map<String, dynamic>?>>(
-        signInStateProvider,
-            (previous, next) {
-          next.when(
-            data: (data) {
-              if (data != null && data['access_token'] != null) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MainApp()),
-                );
-              }
-            },
-            error: (error, stack) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('로그인 실패: ${error.toString()}')),
-              );
-            },
-            loading: () {},
-          );
-        },
-      );
-    });
   }
 
   void _updateButtonState() {
     final emailInput = _emailController.text.trim();
     final pwInput = _pwController.text.trim();
 
-    final isIdValid = RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(emailInput);
-    final isPwValid = pwInput.isNotEmpty;
-    final newButtonState = isIdValid && emailInput.isNotEmpty && isPwValid;
+    final newButtonState = emailInput.isNotEmpty && pwInput.isNotEmpty;
 
     if (isButtonEnabled != newButtonState) {
       setState(() {
@@ -95,6 +69,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final signInState = ref.watch(signInStateProvider);
+
+    ref.listen<AsyncValue<Map<String, dynamic>?>>(
+      signInStateProvider,
+          (previous, next) {
+        next.when(
+          data: (data) {
+            if (data != null && data['access_token'] != null) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MainApp()),
+              );
+            }
+          },
+          error: (error, stack) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('로그인 실패: ${error.toString()}')),
+            );
+          },
+          loading: () {},
+        );
+      },
+    );
 
     Widget? suffixIcon;
     if (_pwController.text.isNotEmpty) {
