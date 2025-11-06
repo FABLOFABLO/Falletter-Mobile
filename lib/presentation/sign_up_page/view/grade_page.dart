@@ -1,38 +1,33 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
+import 'package:falletter/core/components/header/sign_up_indicator.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/core/components/header/sign_up_indicator.dart';
 import 'package:falletter/presentation/sign_up_page/view/email_page.dart';
 import 'package:flutter/material.dart';
+import 'package:falletter/core/providers/signup_provider.dart';
 
-class GradePage extends StatefulWidget {
+class GradePage extends ConsumerStatefulWidget {
   const GradePage({super.key});
 
   @override
-  State<GradePage> createState() => _GradePageState();
+  ConsumerState<GradePage> createState() => _GradePageState();
 }
 
-class _GradePageState extends State<GradePage> {
+class _GradePageState extends ConsumerState<GradePage> {
   final TextEditingController _gradeController = TextEditingController();
   bool isButtonEnabled = false;
-
-  void _goToNextStep() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const EmailPage()),
-    );
-  }
 
   @override
   void initState() {
     super.initState();
     SignUpFlow.currentStep = 2;
-    _gradeController.addListener(_onGradeChanged);
+    _gradeController.addListener(_onTextChanged);
   }
 
-  void _onGradeChanged() {
+  void _onTextChanged() {
     final input = _gradeController.text.trim();
     final parts = input.split(' ');
 
@@ -42,9 +37,32 @@ class _GradePageState extends State<GradePage> {
     });
   }
 
+  void _goToNextStep() {
+    final input = _gradeController.text.trim();
+    final parts = input.split(' ');
+
+    String schoolNumber = '';
+    String name = '';
+
+    if (parts.isNotEmpty) {
+      schoolNumber = parts[0].trim();
+    }
+    if (parts.length > 1) {
+      name = parts.sublist(1).join(' ').trim();
+    }
+
+    ref.read(signUpProvider.notifier).setSchoolNumber(schoolNumber);
+    ref.read(signUpProvider.notifier).setName(name);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const EmailPage()),
+    );
+  }
+
   @override
   void dispose() {
-    _gradeController.removeListener(_onGradeChanged);
+    _gradeController.removeListener(_onTextChanged);
     _gradeController.dispose();
     super.dispose();
   }
@@ -64,19 +82,16 @@ class _GradePageState extends State<GradePage> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('학번을 입력해주세요.', style: FalletterTextStyle.title2),
+            child: Text(
+              '학번을 입력해주세요.',
+              style: FalletterTextStyle.title2,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: CustomTextFormField(
               controller: _gradeController,
               maxLines: 1,
-              decoration: InputDecoration(
-                hintText: '학번을 입력해주세요.',
-                hintStyle: FalletterTextStyle.placeholder.copyWith(
-                  color: FalletterColor.gray700,
-                ),
-              ),
             ),
           ),
           const Spacer(),
