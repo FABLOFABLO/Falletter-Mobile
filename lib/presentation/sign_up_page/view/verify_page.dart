@@ -3,15 +3,15 @@ import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/constants/color.dart';
+import 'package:falletter/core/providers/auth_provider.dart';
 import 'package:falletter/core/providers/signup_provider.dart';
 import 'package:falletter/presentation/sign_up_page/view/password_page.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/header/sign_up_indicator.dart';
-import 'package:falletter/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class VerifyPage extends StatefulWidget {
+class VerifyPage extends ConsumerStatefulWidget {
   final String email;
 
   const VerifyPage({
@@ -20,10 +20,10 @@ class VerifyPage extends StatefulWidget {
   });
 
   @override
-  State<VerifyPage> createState() => _VerifyPageState();
+  ConsumerState<VerifyPage> createState() => _VerifyPageState();
 }
 
-class _VerifyPageState extends State<VerifyPage> {
+class _VerifyPageState extends ConsumerState<VerifyPage> {
   final TextEditingController _verifyController = TextEditingController();
   Timer? _timer;
   int _secondsRemaining = 300;
@@ -75,32 +75,37 @@ class _VerifyPageState extends State<VerifyPage> {
 
   Future<void> _verifyCode() async {
     final code = _verifyController.text.trim();
-    final authService = AuthService();
+    final authService = ref.read(authServiceProvider);
 
     setState(() => isLoading = true);
+
     final result = await authService.verifyCodeMatch(
       email: widget.email,
       code: code,
     );
-    setState(() => isLoading = false);
 
+    setState(() => isLoading = false);
     if (!mounted) return;
 
     if (result == 'OK') {
-      final container = ProviderScope.containerOf(context, listen: false);
-      container.read(signUpProvider.notifier).setEmail(widget.email);
-
+      ref.read(signUpProvider.notifier).setEmail(widget.email);
       SignUpFlow.nextStep();
+
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const PasswordPage()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
-      );
+      _showErrorSnackBar(result);
     }
   }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {

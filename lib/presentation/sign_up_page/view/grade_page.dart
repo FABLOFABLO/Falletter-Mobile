@@ -83,7 +83,7 @@ class _GradePageState extends ConsumerState<GradePage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              '학번과 이름을 함께 입력해주세요.',
+              '학번을 입력해주세요.',
               style: FalletterTextStyle.title2,
             ),
           ),
