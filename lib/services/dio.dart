@@ -13,6 +13,8 @@ class DioClient {
     dio = Dio(
       BaseOptions(
         baseUrl: ApiEndPoints.baseUrl,
+        contentType: Headers.jsonContentType,
+        responseType: ResponseType.json,
       ),
     );
   }
