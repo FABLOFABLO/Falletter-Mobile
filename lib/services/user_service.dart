@@ -2,13 +2,19 @@ import 'package:dio/dio.dart';
 import 'package:falletter/core/constants/api_endpoints.dart';
 import 'package:falletter/services/dio.dart';
 
-/// 정보조회
 class UserService {
   final Dio _dio = DioClient().dio;
 
-  Future<Map<String, dynamic>> getUserInfo() async {
+  Future<Map<String, dynamic>> getUserInfo(String accessToken) async {
     try {
-      final response = await _dio.get(ApiEndPoints.users);
+      final response = await _dio.get(
+        ApiEndPoints.users,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+        ),
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
@@ -20,46 +26,56 @@ class UserService {
           'profileImage': data['profile_image'],
         };
       } else {
-        throw Exception('유저 정보를 불러올 수 없습니다.');
+        throw Exception('유저 정보를 불러올 수 없습니다. 상태코드: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      if (e.response != null) {
-        switch (e.response?.statusCode) {
-          case 401:
-            throw Exception('Unauthorized 인증 실패');
-          case 403:
-            throw Exception('Forbidden 권한 없음');
-          case 404:
-            throw Exception('Not Found 유저를 찾을 수 없음');
-          case 500:
-            throw Exception('Internal Server Error');
-          default:
-            throw Exception('서버 오류: ${e.response?.statusCode}');
-        }
-      } else {
-        throw Exception('네트워크 오류');
-      }
+      throw Exception('유저 정보 조회 실패: ${e.response?.statusCode}');
     }
   }
 
-  Future<String> logout() async {
-    final response = await _dio.delete(
-      ApiEndPoints.logOut, data: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer your_access_token', // 실제 토큰 적용
-    },
-    );
-    switch (response.statusCode) {
-      case 204:
-        return 'OK';
-      case 401:
-        return 'Unauthorized 인증 실패';
-      case 404:
-        return 'Not Found 유저를 찾을 수 없음';
-      case 500:
-        return 'Internal Server Error';
-      default:
-        return '알 수 없는 오류 (${response.statusCode})';
+  Future<void> logout() async {
+    return;
+  }
+
+  Future<int> getLetterCount(String accessToken) async {
+    try {
+      final response = await _dio.get(
+        ApiEndPoints.letterCount,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return (response.data['letter_count'] ?? 0).toInt();
+      } else {
+        throw Exception('레터 개수를 불러올 수 없습니다.');
+      }
+    } on DioException catch (e) {
+      throw Exception('레터 개수 조회 실패: ${e.message}');
+    }
+  }
+
+  Future<int> getBrickCount(String accessToken) async {
+    try {
+      final response = await _dio.get(
+        ApiEndPoints.brickCount,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return (response.data['brick_count'] ?? 0).toInt();
+      } else {
+        throw Exception('브릭 개수를 불러올 수 없습니다.');
+      }
+    } on DioException catch (e) {
+      throw Exception('브릭 개수 조회 실패: ${e.message}');
     }
   }
 }
