@@ -93,15 +93,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     Widget? suffixIcon;
     if (_pwController.text.isNotEmpty) {
-      if (_obscureText) {
-        suffixIcon = FieldIcons.hidePwIcon(
-          onPressed: () => setState(() => _obscureText = false),
-        );
-      } else {
-        suffixIcon = FieldIcons.showPwIcon(
-          onPressed: () => setState(() => _obscureText = true),
-        );
-      }
+      suffixIcon = _obscureText
+          ? FieldIcons.hidePwIcon(onPressed: () => setState(() => _obscureText = false))
+          : FieldIcons.showPwIcon(onPressed: () => setState(() => _obscureText = true));
     }
 
     final isLoading = signInState.isLoading;
