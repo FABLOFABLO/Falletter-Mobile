@@ -8,4 +8,7 @@ class ApiEndPoints {
 
   static const emailVerify = "/auth/email/verify";
   static const emailMatch = "/auth/email/match";
+
+  static const letterCount = "/item/letter/count";
+  static const brickCount = "/item/brick/count";
 }
