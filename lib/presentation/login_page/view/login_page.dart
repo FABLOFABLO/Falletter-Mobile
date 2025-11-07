@@ -69,7 +69,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _login() async {
     final rawEmail = _emailController.text.trim();
-    final email = rawEmail.contains('@') ? rawEmail : '$rawEmail@dsm.hs.kr';
+    final email = rawEmail.contains('@')
+        ? rawEmail
+        : '$rawEmail@dsm.hs.kr';
     final password = _pwController.text.trim();
 
     await ref.read(signInStateProvider.notifier).signIn(
@@ -90,12 +92,39 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final signInState = ref.watch(signInStateProvider);
+    ref.listen<AsyncValue<Map<String, dynamic>?>>(
+      signInStateProvider,
+          (previous, next) {
+        next.when(
+          data: (data) {
+            if (data != null && data['access_token'] != null) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MainApp()),
+              );
+            }
+          },
+          error: (error, stack) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('로그인 실패: ${error.toString()}')),
+            );
+          },
+          loading: () {},
+        );
+      },
+    );
 
     Widget? suffixIcon;
     if (_pwController.text.isNotEmpty) {
-      suffixIcon = _obscureText
-          ? FieldIcons.hidePwIcon(onPressed: () => setState(() => _obscureText = false))
-          : FieldIcons.showPwIcon(onPressed: () => setState(() => _obscureText = true));
+      if (_obscureText) {
+        suffixIcon = FieldIcons.hidePwIcon(
+          onPressed: () => setState(() => _obscureText = false),
+        );
+      } else {
+        suffixIcon = FieldIcons.showPwIcon(
+          onPressed: () => setState(() => _obscureText = true),
+        );
+      }
     }
 
     final isLoading = signInState.isLoading;
@@ -178,7 +207,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     width: double.infinity,
                     onPressed: isButtonEnabled && !isLoading ? _login : null,
                     child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
                         : const Text('로그인하기'),
                   ),
                 ],
