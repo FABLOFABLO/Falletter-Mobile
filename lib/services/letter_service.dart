@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:falletter/core/constants/api_endpoints.dart';
 import 'package:falletter/models/letter_model.dart';
@@ -39,7 +38,6 @@ class LetterService {
           throw Exception('알 수 없는 오류 (${response.statusCode})');
       }
     } on DioException catch (e) {
-      print('❌ DioException: ${e.response?.statusCode} - ${e.message}');
       if (e.response != null) {
         switch (e.response!.statusCode) {
           case 400:
@@ -59,6 +57,34 @@ class LetterService {
       throw Exception('네트워크 오류: ${e.message}');
     } catch (e) {
       throw Exception('서버 통신 오류: $e');
+    }
+  }
+
+  Future<void> updateLetterCount({required int letterUpdate}) async {
+    final response = await _dio.patch(
+      ApiEndPoints.letterUpdate,
+      data: {
+        'letter_update': letterUpdate,
+      },
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      ),
+    );
+    switch (response.statusCode) {
+      case 200:
+        return;
+      case 400:
+        throw Exception('Bad Request 잘못된 요청');
+      case 401:
+        throw Exception('Unauthorized 인증 실패');
+      case 404:
+        throw Exception('Not Found 유저를 찾을 수 없음');
+      case 500:
+        throw Exception('Internal Server Error');
+      default:
+        throw Exception('서버 오류 (${response.statusCode})');
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:falletter/core/providers/auth_token_provider.dart';
 import 'package:falletter/core/providers/letter_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/models/letter_model.dart';
@@ -15,9 +16,15 @@ class LetterRepository {
     final letter = LetterModel(content: content, reception: receptionId);
     return await _service.sendLetter(letter);
   }
+
+  Future<void> updateLetterCount({required int letterUpdate}) async {
+    await _service.updateLetterCount(letterUpdate: letterUpdate);
+  }
 }
 
 final letterRepositoryProvider = Provider<LetterRepository>((ref) {
-  final service = ref.read(letterServiceProvider);
+  final token = ref.watch(accessTokenProvider);
+  if (token == null) throw Exception('토큰 없음');
+  final service = LetterService(token);
   return LetterRepository(service);
 });

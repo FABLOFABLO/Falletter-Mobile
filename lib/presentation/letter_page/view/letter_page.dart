@@ -1,14 +1,18 @@
-import 'package:falletter/core/providers/letter_provider.dart';
-import 'package:falletter/core/providers/theme_provider.dart';
-import 'package:falletter/core/theme/theme_colors.dart';
+import 'package:falletter/presentation/letter_page/widget/student_search_dropdown.dart';
+import 'package:falletter/repository/letter/letter_repository.dart';
+import 'package:falletter/repository/user/user_find_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:falletter/core/providers/item_count_provider.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/theme/theme_colors.dart';
+import 'package:falletter/models/student_model.dart';
+import 'package:lottie/lottie.dart';
 
 class LetterPage extends ConsumerStatefulWidget {
   const LetterPage({super.key});
@@ -18,46 +22,90 @@ class LetterPage extends ConsumerStatefulWidget {
 }
 
 class _LetterPageState extends ConsumerState<LetterPage> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
-  final int maxLength = 200;
+  final _titleController = TextEditingController();
+  final _contentController = TextEditingController();
+  final _titleFocusNode = FocusNode();
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
 
-  bool get isTitleValid {
-    final text = _titleController.text.trim();
-    if (text.isEmpty) return false;
-    final parts = text.split(' ');
-    if (parts.length != 2) return false;
+  List<StudentModel> _students = [];
+  StudentModel? _selectedStudent;
+  bool _isSearching = false;
 
-    final studentId = parts[0];
-    final name = parts[1];
-    if (studentId.length != 4) return false;
-    if (!RegExp(r'^\d{4}$').hasMatch(studentId)) return false;
-    if (name.isEmpty) return false;
-    if (!RegExp(r'^[가-힣]+$').hasMatch(name)) return false;
-
-    return true;
+  @override
+  void initState() {
+    super.initState();
+    _contentController.addListener(() => setState(() {}));
   }
 
-  bool get isContentValid => _contentController.text.trim().isNotEmpty;
+  @override
+  void dispose() {
+    _hideDropdown();
+    _titleController.dispose();
+    _contentController.dispose();
+    _titleFocusNode.dispose();
+    super.dispose();
+  }
 
-  bool get isFormValid => isTitleValid && isContentValid;
+  void _hideDropdown() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
 
-  String get senderInfo {
-    final text = _titleController.text.trim();
-    if (text.isEmpty) return '';
-    final parts = text.split(RegExp(r'\s+'));
-    if (parts.length < 2) return '';
-    final studentId = parts[0];
-    final name = parts[1];
-    return '$studentId $name';
+  void _showDropdown(BuildContext context) {
+    _hideDropdown();
+    final renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (_) => Positioned(
+        width: size.width - 40,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          offset: const Offset(0, 60),
+          child: Material(
+            borderRadius: BorderRadius.circular(8),
+            color: FalletterColor.middleBlack,
+            child: StudentSearchDropdown(
+              students: _students,
+              query: _titleController.text.trim(),
+              isSearching: _isSearching,
+              onSelect: (student) {
+                setState(() {
+                  _selectedStudent = student;
+                  _titleController.text = '${student.schoolNumber} ${student.name}';
+                });
+                _hideDropdown();
+                FocusScope.of(context).unfocus();
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  Future<void> _onSearch(String query) async {
+    setState(() => _isSearching = true);
+    final result = await searchStudents(ref: ref, query: query);
+    if (!mounted) return;
+
+    setState(() {
+      _students = result;
+      _isSearching = false;
+    });
+
+    result.isEmpty ? _hideDropdown() : _showDropdown(context);
   }
 
   void _showSubmissionOverlay(ThemeColors themeColors, String receiver) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.8),
-      builder: (BuildContext context) {
+      barrierColor: Colors.black.withAlpha(204),
+      builder: (dialogContext) {
         return PopScope(
           canPop: false,
           child: Center(
@@ -75,18 +123,21 @@ class _LetterPageState extends ConsumerState<LetterPage> {
                   width: 200,
                   height: 131,
                   fit: BoxFit.cover,
+                  repeat: false,
                   onLoaded: (composition) {
                     Future.delayed(composition.duration, () {
-                      if (mounted) Navigator.of(context).pop();
+                      if (Navigator.of(dialogContext).canPop()) {
+                        Navigator.of(dialogContext).pop();
+                      } else {
+                        Navigator.of(dialogContext, rootNavigator: true).pop();
+                      }
                     });
                   },
                 ),
                 const SizedBox(height: 20),
                 Text(
                   '레터는 지금부터 12시간 후에 도착합니다.',
-                  style: FalletterTextStyle.body3.copyWith(
-                    color: FalletterColor.gray200,
-                  ),
+                  style: FalletterTextStyle.body3.copyWith(color: FalletterColor.gray200),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -97,49 +148,12 @@ class _LetterPageState extends ConsumerState<LetterPage> {
     );
   }
 
-  Future<void> _submitLetter() async {
-    if (!isFormValid) return;
-
-    final letterState = ref.read(letterProvider.notifier);
-    final selectedTheme = ref.read(themeProvider);
-    final themeColors = appThemeColors[selectedTheme]!;
-
-    if (letterState.state.availableLetter <= 0) return;
-
-    letterState.sendLetter(
-      senderId: 'me', // 실제 사용자 id로 변경 예정
-      receiverId: _titleController.text.trim(),
-      title: senderInfo,
-      content: _contentController.text.trim(),
-    );
-
-    _showSubmissionOverlay(themeColors, senderInfo);
-
-    _titleController.clear();
-    _contentController.clear();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _titleController.addListener(() => setState(() {}));
-    _contentController.addListener(() => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _contentController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final selectedTheme = ref.watch(themeProvider);
-    final themeColors = appThemeColors[selectedTheme]!;
-    final letterState = ref.watch(letterProvider);
-
-    final isEnabled = letterState.availableLetter > 0;
+    final theme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[theme]!;
+    final letterCount = ref.watch(itemCountProvider)['letter'] ?? 0;
+    final isEnabled = letterCount > 0;
 
     return Scaffold(
       body: Padding(
@@ -152,89 +166,94 @@ class _LetterPageState extends ConsumerState<LetterPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  SvgPicture.asset(
-                    themeColors.letterSvg,
-                    width: 38,
-                    height: 26,
-                  ),
+                  SvgPicture.asset(themeColors.letterSvg, width: 38, height: 26),
                   const SizedBox(width: 12),
                   Text(
-                    '${letterState.availableLetter}개',
-                    style: FalletterTextStyle.body1.copyWith(
-                      color:
-                          letterState.availableLetter > 0
-                              ? FalletterColor.white
-                              : FalletterColor.gray500,
-                    ),
+                    '$letterCount개',
+                    style: FalletterTextStyle.body1.copyWith(color: FalletterColor.white),
                   ),
                 ],
               ),
             ),
             Text(
               '누구에게 보내시나요?',
-              style: FalletterTextStyle.subTitle1.copyWith(
-                color:
-                    isEnabled ? FalletterColor.white : FalletterColor.gray500,
-              ),
+              style: FalletterTextStyle.subTitle1.copyWith(color: FalletterColor.white),
             ),
             const SizedBox(height: 16),
-            IgnorePointer(
-              ignoring: !isEnabled,
+            CompositedTransformTarget(
+              link: _layerLink,
               child: CustomTextFormField(
                 controller: _titleController,
-                decoration: InputDecoration(enabled: isEnabled),
+                focusNode: _titleFocusNode,
+                onChanged: (v) => _onSearch(v),
               ),
             ),
             const SizedBox(height: 32),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   '레터를 작성해주세요',
-                  style: FalletterTextStyle.subTitle1.copyWith(
-                    color:
-                        isEnabled
-                            ? FalletterColor.white
-                            : FalletterColor.gray500,
-                  ),
+                  style: FalletterTextStyle.subTitle1.copyWith(color: FalletterColor.white),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      '${_contentController.text.length}',
-                      style: FalletterTextStyle.body2.copyWith(
-                        color:
-                            isEnabled
-                                ? FalletterColor.white
-                                : FalletterColor.gray500,
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${_contentController.text.length}',
+                        style: FalletterTextStyle.body3,
                       ),
-                    ),
-                    Text(
-                      '/$maxLength',
-                      style: FalletterTextStyle.body2.copyWith(
-                        color: FalletterColor.gray500,
+                      TextSpan(
+                        text: '/200',
+                        style: FalletterTextStyle.body3.copyWith(color: FalletterColor.gray400),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            IgnorePointer(
-              ignoring: !isEnabled,
-              child: CustomTextFormField(
-                controller: _contentController,
-                maxLines: 7,
-                maxLength: maxLength,
-                decoration: const InputDecoration(
-                  counterText: '',
-                ),
-              ),
+            const SizedBox(width: 16),
+            CustomTextFormField(
+              controller: _contentController,
+              maxLines: 7,
+              maxLength: 200,
+              decoration: InputDecoration(counterText: ''),
             ),
             const Spacer(),
             CustomElevatedButton(
               width: double.infinity,
-              onPressed: (isFormValid && isEnabled) ? _submitLetter : null,
+              onPressed: (isEnabled &&
+                  _selectedStudent != null &&
+                  _contentController.text.trim().isNotEmpty)
+                  ? () async {
+                final repository = ref.read(letterRepositoryProvider);
+                final student = _selectedStudent!;
+                final content = _contentController.text.trim();
+
+                try {
+                  await repository.sendLetter(
+                      receptionId: student.id, content: content);
+
+                  await repository.updateLetterCount(letterUpdate: 1);
+
+                  ref.read(itemCountProvider.notifier).decrement('letter');
+
+                  _showSubmissionOverlay(
+                      themeColors, '${student.schoolNumber} ${student.name}');
+
+                  setState(() {
+                    _selectedStudent = null;
+                    _titleController.clear();
+                    _contentController.clear();
+                  });
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('레터 전송 실패: $e')),
+                  );
+                }
+              }
+                  : null,
               child: const Text('레터 전송하기'),
             ),
           ],
