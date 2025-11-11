@@ -7,17 +7,20 @@ import 'package:flutter/material.dart';
 class SentLetterBox extends StatelessWidget {
   final DateTime? sentAt;
   final String recipientInfo;
-
+  final bool isDelivered;
   const SentLetterBox({
     super.key,
     this.sentAt,
     required this.recipientInfo,
+    this.isDelivered = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final String recipientText = '$recipientInfo에게';
-    final String time = formatSentTime(sentAt);
+    final String time = isDelivered
+        ? formatSentTime(sentAt)
+        : '전송중...';
 
     return ReusableLetterBox(
       children: [
@@ -27,9 +30,7 @@ class SentLetterBox extends StatelessWidget {
             color: FalletterColor.gray400,
           ),
         ),
-        const SizedBox(
-          height: 4,
-        ),
+        const SizedBox(height: 4),
         Text(
           recipientText,
           style: FalletterTextStyle.subTitle2,

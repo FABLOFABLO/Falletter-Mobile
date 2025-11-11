@@ -83,7 +83,9 @@ class LetterModal extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(20),
             child: GestureDetector(
-              onTap: onClose,
+              onTap: () {
+                Navigator.of(context).pop();
+              },
               child: Container(
                 width: screenWidth * 0.13,
                 height: screenWidth * 0.13,

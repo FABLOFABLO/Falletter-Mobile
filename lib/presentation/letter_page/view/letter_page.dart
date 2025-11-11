@@ -36,6 +36,11 @@ class _LetterPageState extends ConsumerState<LetterPage> {
   void initState() {
     super.initState();
     _contentController.addListener(() => setState(() {}));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final serverLetterCount = ref.read(itemCountProvider)['letter'] ?? 0;
+      ref.read(itemCountProvider.notifier).setItemCount('letter', serverLetterCount);
+    });
   }
 
   @override
@@ -235,7 +240,7 @@ class _LetterPageState extends ConsumerState<LetterPage> {
                   await repository.sendLetter(
                       receptionId: student.id, content: content);
 
-                  await repository.updateLetterCount(letterUpdate: 1);
+                  await repository.updateLetterCount(letterUpdate: -1);
 
                   ref.read(itemCountProvider.notifier).decrement('letter');
 

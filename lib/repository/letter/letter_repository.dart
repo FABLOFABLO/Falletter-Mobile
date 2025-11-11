@@ -1,5 +1,4 @@
 import 'package:falletter/core/providers/auth_token_provider.dart';
-import 'package:falletter/core/providers/letter_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/models/letter_model.dart';
 import 'package:falletter/services/letter_service.dart';

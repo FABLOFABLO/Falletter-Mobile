@@ -1,41 +1,52 @@
+import 'package:falletter/repository/letter/sent_letter_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:falletter/models/sent_letter_model.dart';
+import 'package:falletter/core/providers/student_provider.dart';
 
-// 데이터 모델
-class SentLetter {
-  final String dear;
-  final String recipientInfo;
-  final String content;
-  final DateTime? sentAt;
+class SentLetterViewModel extends SentLetterModel {
+  final String receiverDisplayName;
 
-  SentLetter({
-    required this.dear,
-    required this.recipientInfo,
-    required this.content,
-    required this.sentAt,
+  SentLetterViewModel({
+    required super.id,
+    required super.content,
+    required super.receptionId,
+    required super.senderId,
+    required super.isDelivered,
+    required super.createdAt,
+    required this.receiverDisplayName,
   });
 }
 
-// Riverpod Provider (예시 데이터)
-final sentLettersProvider = Provider<List<SentLetter>>((ref) {
-  return [
-    SentLetter(
-      dear: '윤도영',
-      recipientInfo: '윤도영',
-      content: '안녕하세요! 잘 지내시죠?',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 10)),
-    ),
-    SentLetter(
-      dear: '윤도영',
-      recipientInfo: '윤도영',
-      content: '안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠?',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 10)),
-    ),
-    SentLetter(
-      dear: '서진수',
-      recipientInfo: '서진수',
-      content: '안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 다음에 한 번 봬요. 안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 다음에 한 번 봬요. 안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 다음에 한 번 봬요. 안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 다음에 한 번 봬요. 안녕하세요! 잘 지내시죠? 그동안 별 일은 없으셨죠? 다음에 한 번 봬요. ',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 10)),
-    ),
-    // 추가 데이터...
-  ];
+final sentLettersProvider = FutureProvider<List<SentLetterViewModel>>((ref) async {
+  try {
+    final sentLetterRepo = ref.watch(sentLetterRepositoryProvider);
+    final sentLetters = await sentLetterRepo.fetchSentLetters();
+    final studentsAsync = ref.watch(studentsProvider);
+    final students = studentsAsync.maybeWhen(
+      data: (list) {
+        return list;
+      },
+      orElse: () {
+        return [];
+      },
+    );
+
+    final studentMap = {for (var s in students) s.id: s};
+    final viewModels = sentLetters.map((letter) {
+      final student = studentMap[letter.receptionId];
+      return SentLetterViewModel(
+        id: letter.id,
+        content: letter.content,
+        receptionId: letter.receptionId,
+        senderId: letter.senderId,
+        isDelivered: letter.isDelivered,
+        createdAt: letter.createdAt,
+        receiverDisplayName: student?.displayText ?? '알 수 없음 (${letter.receptionId})',
+      );
+    }).toList();
+
+    return viewModels;
+  } catch (e) {
+    rethrow;
+  }
 });
