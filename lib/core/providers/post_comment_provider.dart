@@ -1,0 +1,95 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:falletter/models/post_model.dart';
+import 'package:falletter/services/post_service.dart';
+import 'package:falletter/services/comment_service.dart';
+import 'package:falletter/core/providers/auth_token_provider.dart';
+
+final postServiceProvider = Provider<PostService>((ref) {
+  final token = ref.watch(accessTokenProvider);
+  if (token == null) throw Exception('토큰 없음');
+  return PostService(token);
+});
+
+final commentServiceProvider = Provider<CommentService>((ref) {
+  final token = ref.watch(accessTokenProvider);
+  if (token == null) throw Exception('토큰 없음');
+  return CommentService(token);
+});
+
+final postsProvider =
+StateNotifierProvider<PostsNotifier, List<PostModel>>((ref) {
+  final service = ref.watch(postServiceProvider);
+  return PostsNotifier(service);
+});
+
+class PostsNotifier extends StateNotifier<List<PostModel>> {
+  final PostService _service;
+  late final CommentService _commentService;
+
+  PostsNotifier(this._service) : super([]) {
+    _commentService = _service.commentService;
+  }
+
+  Future<void> fetchPosts() async {
+    try {
+      final posts = await _service.getAllPosts();
+      state = posts;
+    } catch (e) {
+      print('=== fetchPosts error: $e');
+    }
+  }
+
+  Future<void> addPost(String title, String content) async {
+    try {
+      final success = await _service.createPost(title, content);
+      if (success) await fetchPosts();
+    } catch (e) {
+      print('=== addPost error: $e');
+    }
+  }
+
+  Future<void> updatePost(int postId, String title, String content) async {
+    try {
+      final success = await _service.updatePost(postId, title, content);
+      if (success) await fetchPosts();
+    } catch (e) {
+      print('=== updatePost error: $e');
+    }
+  }
+
+  Future<void> deletePost(int postId) async {
+    try {
+      final success = await _service.deletePost(postId);
+      if (success) {
+        state = state.where((p) => p.id != postId).toList();
+      }
+    } catch (e) {
+      print('=== deletePost error: $e');
+    }
+  }
+
+  Future<void> addComment(int postId, String text) async {
+    try {
+      final success = await _commentService.createComment(postId, text);
+      if (success) await fetchPosts();
+    } catch (e) {
+      print('=== addComment error: $e');
+    }
+  }
+
+  Future<void> deleteComment(int postId, int commentId) async {
+    try {
+      final success = await _commentService.deleteComment(commentId);
+      if (success) {
+        state = state.map((p) {
+          if (p.id != postId) return p;
+          final updatedComments =
+          p.comments.where((c) => c.id != commentId).toList();
+          return p.copyWith(comments: updatedComments);
+        }).toList();
+      }
+    } catch (e) {
+      print('=== deleteComment error: $e');
+    }
+  }
+}

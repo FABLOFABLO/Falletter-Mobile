@@ -1,5 +1,6 @@
-import 'package:falletter/core/providers/comment_provider.dart';
+import 'package:falletter/core/providers/post_comment_provider.dart';
 import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/providers/nickname_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/presentation/main_page/view/post_detail_page.dart';
 import 'package:falletter/presentation/main_page/view/post_page.dart';
@@ -18,27 +19,49 @@ class MainPage extends ConsumerStatefulWidget {
 }
 
 class _MainPageState extends ConsumerState<MainPage> {
-  List<Map<String, dynamic>> posts = [];
-
   @override
   void initState() {
     super.initState();
     timeago.setLocaleMessages('ko', timeago.KoMessages());
+
+    Future.microtask(() async {
+      await ref.read(postsProvider.notifier).fetchPosts();
+
+      final posts = ref.read(postsProvider);
+      final nicknameNotifier = ref.read(nicknameProvider.notifier);
+
+      for (var post in posts) {
+        nicknameNotifier.getOrCreateNickname(post.id, post.authorName);
+        for (var comment in post.comments) {
+          nicknameNotifier.getOrCreateNickname(post.id, comment.username);
+        }
+      }
+      setState(() {});
+    });
   }
 
   Future<void> _refresh() async {
-    setState(() {
-    });
-    await Future.delayed(const Duration(seconds: 1));
+    await ref.read(postsProvider.notifier).fetchPosts();
+
+    final posts = ref.read(postsProvider);
+    final nicknameNotifier = ref.read(nicknameProvider.notifier);
+    for (var post in posts) {
+      nicknameNotifier.getOrCreateNickname(post.id, post.authorName);
+      for (var comment in post.comments) {
+        nicknameNotifier.getOrCreateNickname(post.id, comment.username);
+      }
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final posts = ref.watch(postsProvider);
+    final theme = ref.watch(themeProvider);
+    final themeColors = appThemeColors[theme]!;
+    final nicknameNotifier = ref.read(nicknameProvider.notifier); // 읽기 전용
     final screenWidth = MediaQuery.of(context).size.width;
     final fabSize = screenWidth * 0.2;
-    final commentState = ref.watch(commentProvider);
-    final selectedTheme = ref.watch(themeProvider);
-    final themeColors = appThemeColors[selectedTheme]!;
 
     return Scaffold(
       body: RefreshIndicator(
@@ -50,41 +73,25 @@ class _MainPageState extends ConsumerState<MainPage> {
           itemCount: posts.length,
           itemBuilder: (context, index) {
             final post = posts[index];
-            final commentCount = commentState[post['id']]?.length ?? 0;
+            final authorNickname =
+                nicknameNotifier.state[post.id]?[post.authorName] ?? '';
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: GestureDetector(
                 onTap: () async {
-                  final result = await Navigator.of(
-                    context,
-                    rootNavigator: true,
-                  ).push<Map<String, dynamic>>(
+                  await Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(
-                      builder:
-                          (_) => PostDetailPage(
-                            postId: post['id'],
-                            title: post['title'] ?? '',
-                            content: post['content'] ?? '',
-                            nickname: 'Nickname',
-                            time: post['time'] ?? DateTime.now(),
-                          ),
+                      builder: (_) => PostDetailPage(
+                        postId: post.id,
+                        title: post.title,
+                        content: post.content,
+                        nickname: authorNickname,
+                        time: post.createdAt,
+                      ),
                     ),
                   );
-
-                  if (result != null) {
-                    setState(() {
-                      if (result['deleted'] == true) {
-                        posts.removeAt(index);
-                      } else {
-                        posts[index] = {
-                          ...posts[index],
-                          'title': result['title'] ?? posts[index]['title'] ?? '',
-                          'content':
-                              result['content'] ?? posts[index]['content'] ?? '',
-                        };
-                      }
-                    });
-                  }
+                  await _refresh();
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -95,47 +102,33 @@ class _MainPageState extends ConsumerState<MainPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        post['title'] ?? '',
-                        overflow: TextOverflow.ellipsis,
-                        style: FalletterTextStyle.subTitle2.copyWith(
-                          color: FalletterColor.white,
-                        ),
-                      ),
+                      Text(post.title,
+                          overflow: TextOverflow.ellipsis,
+                          style: FalletterTextStyle.subTitle2.copyWith(
+                            color: FalletterColor.white,
+                          )),
                       const SizedBox(height: 5),
-                      Text(
-                        post['content'] ?? '',
-                        overflow: TextOverflow.ellipsis,
-                        style: FalletterTextStyle.body4.copyWith(
-                          color: FalletterColor.gray400,
-                        ),
-                      ),
+                      Text(post.content,
+                          overflow: TextOverflow.ellipsis,
+                          style: FalletterTextStyle.body4.copyWith(
+                            color: FalletterColor.gray400,
+                          )),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          Text(
-                            'Nickname',
-                            style: FalletterTextStyle.body4.copyWith(
-                              color: FalletterColor.gray500,
-                            ),
-                          ),
+                          Text(authorNickname,
+                              style: FalletterTextStyle.body4
+                                  .copyWith(color: FalletterColor.gray500)),
                           const SizedBox(width: 8),
                           Text(
-                            timeago.format(
-                              post['time'] ?? DateTime.now(),
-                              locale: 'ko',
-                            ),
-                            style: FalletterTextStyle.body4.copyWith(
-                              color: FalletterColor.gray500,
-                            ),
+                            timeago.format(post.createdAt, locale: 'ko'),
+                            style: FalletterTextStyle.body4
+                                .copyWith(color: FalletterColor.gray500),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            '댓글 $commentCount개',
-                            style: FalletterTextStyle.body4.copyWith(
-                              color: FalletterColor.white,
-                            ),
-                          ),
+                          Text('댓글 ${post.comments.length}개',
+                              style: FalletterTextStyle.body4
+                                  .copyWith(color: FalletterColor.white)),
                         ],
                       ),
                     ],
@@ -154,14 +147,7 @@ class _MainPageState extends ConsumerState<MainPage> {
           );
 
           if (result != null && result is Map<String, String>) {
-            setState(() {
-              posts.insert(0, {
-                'id': DateTime.now().millisecondsSinceEpoch,
-                'title': result['title'],
-                'content': result['content'],
-                'time': DateTime.now(),
-              });
-            });
+            await _refresh();
           }
         },
         backgroundColor: Colors.transparent,

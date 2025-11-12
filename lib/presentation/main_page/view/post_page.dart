@@ -1,21 +1,25 @@
 import 'package:falletter/core/components/button/elevated_button.dart';
+import 'package:falletter/core/providers/auth_token_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:falletter/services/post_service.dart';
 
-class PostPage extends StatefulWidget {
+class PostPage extends ConsumerStatefulWidget {
   const PostPage({super.key});
 
   @override
-  State<PostPage> createState() => _PostPageState();
+  ConsumerState<PostPage> createState() => _PostPageState();
 }
 
-class _PostPageState extends State<PostPage> {
+class _PostPageState extends ConsumerState<PostPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   final int maxLength = 200;
+  bool _isLoading = false;
 
   bool get isFilled =>
       _titleController.text.trim().isNotEmpty &&
@@ -37,6 +41,41 @@ class _PostPageState extends State<PostPage> {
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitPost() async {
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
+    final accessToken = ref.read(accessTokenProvider);
+
+    if (accessToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인이 필요합니다.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final postService = PostService(accessToken);
+    final success = await postService.createPost(title, content);
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('게시물이 등록되었습니다.')),
+        );
+        Navigator.pop(context, {'title': title, 'content': content});
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('게시물 등록 중 오류가 발생했습니다.')),
+        );
+      }
+    }
   }
 
   @override
@@ -100,16 +139,17 @@ class _PostPageState extends State<PostPage> {
                     const Spacer(),
                     CustomElevatedButton(
                       width: double.infinity,
-                      onPressed: isFilled
-                          ? () {
-                        final post = {
-                          'title': _titleController.text.trim(),
-                          'content': _contentController.text.trim(),
-                        };
-                        Navigator.pop(context, post);
-                      }
-                          : null,
-                      child: const Text('글 등록하기'),
+                      onPressed: isFilled && !_isLoading ? _submitPost : null,
+                      child: _isLoading
+                          ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: FalletterColor.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Text('글 등록하기'),
                     ),
                     const SizedBox(height: 16),
                   ],
