@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:falletter/core/providers/auth_token_provider.dart';
 import 'package:falletter/core/providers/signin_provider.dart';
 import 'package:falletter/presentation/main_app.dart';
 import 'package:flutter/material.dart';
@@ -29,27 +30,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.initState();
     _emailController.addListener(_updateButtonState);
     _pwController.addListener(_updateButtonState);
-
-    Future.microtask(() {
-      ref.listen<AsyncValue<Map<String, dynamic>?>>(signInStateProvider, (previous, next) {
-        next.when(
-          data: (data) {
-            if (data != null && data['access_token'] != null) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const MainApp()),
-              );
-            }
-          },
-          error: (error, stack) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('로그인 실패: ${error.toString()}')),
-            );
-          },
-          loading: () {},
-        );
-      });
-    });
   }
 
   void _updateButtonState() {
@@ -92,39 +72,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final signInState = ref.watch(signInStateProvider);
-    ref.listen<AsyncValue<Map<String, dynamic>?>>(
-      signInStateProvider,
-          (previous, next) {
-        next.when(
-          data: (data) {
-            if (data != null && data['access_token'] != null) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const MainApp()),
-              );
-            }
-          },
-          error: (error, stack) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('로그인 실패: ${error.toString()}')),
+
+    ref.listen<AsyncValue<Map<String, dynamic>?>>(signInStateProvider, (previous, next) {
+      next.when(
+        data: (data) {
+          if (data != null && data['access_token'] != null) {
+            ref.read(accessTokenProvider.notifier).state = data['access_token'];
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const MainApp()),
             );
-          },
-          loading: () {},
-        );
-      },
-    );
+          }
+        },
+        error: (error, stack) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('로그인 실패: ${error.toString()}')),
+          );
+        },
+        loading: () {},
+      );
+    });
 
     Widget? suffixIcon;
     if (_pwController.text.isNotEmpty) {
-      if (_obscureText) {
-        suffixIcon = FieldIcons.hidePwIcon(
-          onPressed: () => setState(() => _obscureText = false),
-        );
-      } else {
-        suffixIcon = FieldIcons.showPwIcon(
-          onPressed: () => setState(() => _obscureText = true),
-        );
-      }
+      suffixIcon = _obscureText
+          ? FieldIcons.hidePwIcon(
+        onPressed: () => setState(() => _obscureText = false),
+      )
+          : FieldIcons.showPwIcon(
+        onPressed: () => setState(() => _obscureText = true),
+      );
     }
 
     final isLoading = signInState.isLoading;
