@@ -56,7 +56,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     });
   }
 
-  void _showDeleteConfirmDialog(BuildContext context, int postId) {
+  void _showDeleteConfirmDialog(int postId) {
+    final notifier = ref.read(postsProvider.notifier);
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -68,10 +70,12 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
         onLeftPressed: () => Navigator.of(ctx).pop(),
         onRightPressed: () async {
           Navigator.of(ctx).pop();
-          final notifier = ref.read(postsProvider.notifier);
-          await notifier.deletePost(postId);
-          setState(() => _isDeleted = true);
-          if (mounted) Navigator.pop(context, {'deleted': true});
+
+          final success = await notifier.deletePost(postId);
+
+          if (success && mounted) {
+            Navigator.of(context, rootNavigator: true).pop({'deleted': true});
+          }
         },
       ),
     );
@@ -99,7 +103,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                _showDeleteConfirmDialog(context, widget.postId);
+                _showDeleteConfirmDialog(widget.postId);
               },
             ),
             const Divider(height: 1, color: FalletterColor.gray900),

@@ -10,6 +10,7 @@ class PostModel {
   final String title;
   final String content;
   final String authorName;
+  final int authorId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<CommentModel> comments;
@@ -19,6 +20,7 @@ class PostModel {
     required this.title,
     required this.content,
     required this.authorName,
+    required this.authorId,
     required this.createdAt,
     required this.updatedAt,
     required this.comments,
@@ -31,6 +33,7 @@ class PostModel {
       title: json['title'],
       content: json['content'],
       authorName: json['author']['name'],
+      authorId: json['author']['user_id'] ?? json['author']['id'],
       createdAt: parseServerTime(json['created_at']),
       updatedAt: parseServerTime(json['updated_at']),
       comments: commentsJson.map((e) => CommentModel.fromJson(e)).toList(),
@@ -42,6 +45,7 @@ class PostModel {
     String? title,
     String? content,
     String? authorName,
+    int? authorId,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<CommentModel>? comments,
@@ -51,6 +55,7 @@ class PostModel {
       title: title ?? this.title,
       content: content ?? this.content,
       authorName: authorName ?? this.authorName,
+      authorId: authorId ?? this.authorId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       comments: comments ?? this.comments,

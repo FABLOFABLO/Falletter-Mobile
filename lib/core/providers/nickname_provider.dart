@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:falletter/core/providers/user_provider.dart';
+import 'package:falletter/models/post_comment_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/constants/nonymous_nicknames.dart';
 
@@ -30,4 +32,15 @@ class NicknameNotifier extends StateNotifier<Map<int, Map<String, String>>> {
     newState.remove(postId);
     state = newState;
   }
+}
+
+String getPostNickname(WidgetRef ref, PostModel post) {
+  final currentUser = ref.watch(currentUserInfoProvider);
+
+  if (currentUser != null && currentUser.name == post.authorName) {
+    return currentUser.name;
+  }
+
+  final nicknameNotifier = ref.read(nicknameProvider.notifier);
+  return nicknameNotifier.getOrCreateNickname(post.id, post.authorName);
 }

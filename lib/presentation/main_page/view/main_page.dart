@@ -79,7 +79,7 @@ class _MainPageState extends ConsumerState<MainPage> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: GestureDetector(
-                onTap: () async {
+                /*onTap: () async {
                   await Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(
                       builder: (_) => PostDetailPage(
@@ -92,6 +92,23 @@ class _MainPageState extends ConsumerState<MainPage> {
                     ),
                   );
                   await _refresh();
+                },*/
+                onTap: () async {
+                  final result = await Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(
+                      builder: (_) => PostDetailPage(
+                        postId: post.id,
+                        title: post.title,
+                        content: post.content,
+                        nickname: authorNickname,
+                        time: post.createdAt,
+                      ),
+                    ),
+                  );
+
+                  if (result != null && result is Map<String, bool> && result['deleted'] == true) {
+                    await _refresh();
+                  }
                 },
                 child: Container(
                   decoration: BoxDecoration(

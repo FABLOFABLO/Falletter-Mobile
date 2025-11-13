@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:falletter/models/post_model.dart';
+import 'package:falletter/models/post_comment_model.dart';
 import 'package:falletter/services/post_service.dart';
 import 'package:falletter/services/comment_service.dart';
 import 'package:falletter/core/providers/auth_token_provider.dart';
@@ -57,14 +57,16 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
     }
   }
 
-  Future<void> deletePost(int postId) async {
+  Future<bool> deletePost(int postId) async {
     try {
       final success = await _service.deletePost(postId);
       if (success) {
         state = state.where((p) => p.id != postId).toList();
       }
+      return success;
     } catch (e) {
       print('=== deletePost error: $e');
+      return false;
     }
   }
 
@@ -77,7 +79,7 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
     }
   }
 
-  Future<void> deleteComment(int postId, int commentId) async {
+  Future<bool> deleteComment(int postId, int commentId) async {
     try {
       final success = await _commentService.deleteComment(commentId);
       if (success) {
@@ -88,8 +90,10 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
           return p.copyWith(comments: updatedComments);
         }).toList();
       }
+      return success;
     } catch (e) {
       print('=== deleteComment error: $e');
+      return false;
     }
   }
 }

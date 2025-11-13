@@ -1,5 +1,5 @@
 import 'package:falletter/core/providers/auth_token_provider.dart';
-import 'package:falletter/models/post_model.dart';
+import 'package:falletter/models/post_comment_model.dart';
 import 'package:falletter/services/post_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

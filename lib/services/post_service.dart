@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:falletter/models/post_model.dart';
+import 'package:falletter/models/post_comment_model.dart';
 import 'package:falletter/services/comment_service.dart';
 import 'package:falletter/core/constants/api_endpoints.dart';
 import 'package:falletter/services/dio.dart';

@@ -14,10 +14,10 @@ class ApiEndPoints {
   static const emailMatch = "/auth/email/match";
 
   /// Community
-  static const post = "/community/posts"; // 아직
+  static const post = "/community/posts"; // 하는 중
 
   /// Comment
-  static const comment = "/comment"; // 아직
+  static const comment = "/comment"; // 하는 중
 
   /// Item
   static const letterCount = "/item/letter/count";
