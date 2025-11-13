@@ -62,82 +62,93 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => DefaultModal(
-        title: '게시물 삭제',
-        description: '게시물이 영구 삭제됩니다.\n정말 삭제하시겠어요?',
-        leftText: '취소',
-        rightText: '삭제',
-        onLeftPressed: () => Navigator.of(ctx).pop(),
-        onRightPressed: () async {
-          Navigator.of(ctx).pop();
+      builder:
+          (ctx) => DefaultModal(
+            title: '게시물 삭제',
+            description: '게시물이 영구 삭제됩니다.\n정말 삭제하시겠어요?',
+            leftText: '취소',
+            rightText: '삭제',
+            onLeftPressed: () => Navigator.of(ctx).pop(),
+            onRightPressed: () async {
+              Navigator.of(ctx).pop();
 
-          final success = await notifier.deletePost(postId);
+              final success = await notifier.deletePost(postId);
 
-          if (success && mounted) {
-            Navigator.of(context, rootNavigator: true).pop({'deleted': true});
-          }
-        },
-      ),
+              if (success && mounted) {
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).pop({'deleted': true});
+              }
+            },
+          ),
     );
   }
 
   void _showActionDialog() {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: FalletterColor.middleBlack,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Center(
-                child: Text(
-                  '삭제',
-                  style: FalletterTextStyle.button.copyWith(
-                    color: FalletterColor.error,
-                  ),
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _showDeleteConfirmDialog(widget.postId);
-              },
+      builder:
+          (context) => Dialog(
+            backgroundColor: FalletterColor.middleBlack,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            const Divider(height: 1, color: FalletterColor.gray900),
-            ListTile(
-              title: Center(
-                child: Text(
-                  '수정',
-                  style: FalletterTextStyle.button.copyWith(
-                    color: FalletterColor.gray50,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Center(
+                    child: Text(
+                      '삭제',
+                      style: FalletterTextStyle.button.copyWith(
+                        color: FalletterColor.error,
+                      ),
+                    ),
                   ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showDeleteConfirmDialog(widget.postId);
+                  },
                 ),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                final result = await Navigator.push<String>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PostEditPage(title: _title, content: _content),
+                const Divider(height: 1, color: FalletterColor.gray900),
+                ListTile(
+                  title: Center(
+                    child: Text(
+                      '수정',
+                      style: FalletterTextStyle.button.copyWith(
+                        color: FalletterColor.gray50,
+                      ),
+                    ),
                   ),
-                );
-                if (result != null) {
-                  setState(() {
-                    _content = result;
-                    _isModified = true;
-                  });
-                  final notifier = ref.read(postsProvider.notifier);
-                  await notifier.updatePost(widget.postId, _title, _content);
-                  ref.invalidate(postsProvider);
-                }
-              },
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final result = await Navigator.push<String>(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                PostEditPage(title: _title, content: _content),
+                      ),
+                    );
+                    if (result != null) {
+                      setState(() {
+                        _content = result;
+                        _isModified = true;
+                      });
+                      final notifier = ref.read(postsProvider.notifier);
+                      await notifier.updatePost(
+                        widget.postId,
+                        _title,
+                        _content,
+                      );
+                      ref.invalidate(postsProvider);
+                    }
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -158,12 +169,15 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     final notifier = ref.read(postsProvider.notifier);
     final posts = ref.watch(postsProvider);
     final post = posts.firstWhere(
-          (p) => p.id == widget.postId,
+      (p) => p.id == widget.postId,
       orElse: () => posts.first,
     );
 
     final nicknameNotifier = ref.read(nicknameProvider.notifier);
-    final postNickname = nicknameNotifier.getOrCreateNickname(post.id, post.authorName);
+    final postNickname = nicknameNotifier.getOrCreateNickname(
+      post.id,
+      post.authorName,
+    );
 
     return PopScope(
       canPop: false,
@@ -179,7 +193,8 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: PostHeaderCard(
-                  nickname: postNickname, // 글 작성자 닉네임
+                  nickname: postNickname,
+                  // 글 작성자 닉네임
                   time: timeago.format(widget.time.toLocal(), locale: 'ko'),
                   title: _title,
                   content: _content,
@@ -194,14 +209,17 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                   itemBuilder: (context, index) {
                     final comment = post.comments[index];
 
-                    final commentNickname =
-                    nicknameNotifier.getOrCreateNickname(post.id, comment.username);
+                    final commentNickname = nicknameNotifier
+                        .getOrCreateNickname(post.id, comment.username);
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: CommentItem(
                         nickname: commentNickname,
-                        time: timeago.format(comment.createdAt.toLocal(), locale: 'ko'),
+                        time: timeago.format(
+                          comment.createdAt.toLocal(),
+                          locale: 'ko',
+                        ),
                         text: comment.comment,
                         isAuthor: false,
                         onDelete: () async {

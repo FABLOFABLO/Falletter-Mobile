@@ -23,7 +23,7 @@ class _PostPageState extends ConsumerState<PostPage> {
 
   bool get isFilled =>
       _titleController.text.trim().isNotEmpty &&
-          _contentController.text.trim().isNotEmpty;
+      _contentController.text.trim().isNotEmpty;
 
   @override
   void initState() {
@@ -140,16 +140,17 @@ class _PostPageState extends ConsumerState<PostPage> {
                     CustomElevatedButton(
                       width: double.infinity,
                       onPressed: isFilled && !_isLoading ? _submitPost : null,
-                      child: _isLoading
-                          ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: FalletterColor.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                          : const Text('글 등록하기'),
+                      child:
+                          _isLoading
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: FalletterColor.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text('글 등록하기'),
                     ),
                     const SizedBox(height: 16),
                   ],

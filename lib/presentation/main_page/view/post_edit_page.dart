@@ -84,7 +84,9 @@ class _PostEditPageState extends State<PostEditPage> {
                     ),
                     const SizedBox(height: 16),
                     CustomTextFormField(
-                      style: FalletterTextStyle.placeholder.copyWith(color: FalletterColor.gray700),
+                      style: FalletterTextStyle.placeholder.copyWith(
+                        color: FalletterColor.gray700,
+                      ),
                       controller: _titleController,
                       decoration: InputDecoration(
                         enabled: false,

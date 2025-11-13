@@ -79,34 +79,26 @@ class _MainPageState extends ConsumerState<MainPage> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: GestureDetector(
-                /*onTap: () async {
-                  await Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailPage(
-                        postId: post.id,
-                        title: post.title,
-                        content: post.content,
-                        nickname: authorNickname,
-                        time: post.createdAt,
-                      ),
-                    ),
-                  );
-                  await _refresh();
-                },*/
                 onTap: () async {
-                  final result = await Navigator.of(context, rootNavigator: true).push(
+                  final result = await Navigator.of(
+                    context,
+                    rootNavigator: true,
+                  ).push(
                     MaterialPageRoute(
-                      builder: (_) => PostDetailPage(
-                        postId: post.id,
-                        title: post.title,
-                        content: post.content,
-                        nickname: authorNickname,
-                        time: post.createdAt,
-                      ),
+                      builder:
+                          (_) => PostDetailPage(
+                            postId: post.id,
+                            title: post.title,
+                            content: post.content,
+                            nickname: authorNickname,
+                            time: post.createdAt,
+                          ),
                     ),
                   );
 
-                  if (result != null && result is Map<String, bool> && result['deleted'] == true) {
+                  if (result != null &&
+                      result is Map<String, bool> &&
+                      result['deleted'] == true) {
                     await _refresh();
                   }
                 },
@@ -119,33 +111,44 @@ class _MainPageState extends ConsumerState<MainPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(post.title,
-                          overflow: TextOverflow.ellipsis,
-                          style: FalletterTextStyle.subTitle2.copyWith(
-                            color: FalletterColor.white,
-                          )),
+                      Text(
+                        post.title,
+                        overflow: TextOverflow.ellipsis,
+                        style: FalletterTextStyle.subTitle2.copyWith(
+                          color: FalletterColor.white,
+                        ),
+                      ),
                       const SizedBox(height: 5),
-                      Text(post.content,
-                          overflow: TextOverflow.ellipsis,
-                          style: FalletterTextStyle.body4.copyWith(
-                            color: FalletterColor.gray400,
-                          )),
+                      Text(
+                        post.content,
+                        overflow: TextOverflow.ellipsis,
+                        style: FalletterTextStyle.body4.copyWith(
+                          color: FalletterColor.gray400,
+                        ),
+                      ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          Text(authorNickname,
-                              style: FalletterTextStyle.body4
-                                  .copyWith(color: FalletterColor.gray500)),
+                          Text(
+                            authorNickname,
+                            style: FalletterTextStyle.body4.copyWith(
+                              color: FalletterColor.gray500,
+                            ),
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             timeago.format(post.createdAt, locale: 'ko'),
-                            style: FalletterTextStyle.body4
-                                .copyWith(color: FalletterColor.gray500),
+                            style: FalletterTextStyle.body4.copyWith(
+                              color: FalletterColor.gray500,
+                            ),
                           ),
                           const SizedBox(width: 8),
-                          Text('댓글 ${post.comments.length}개',
-                              style: FalletterTextStyle.body4
-                                  .copyWith(color: FalletterColor.white)),
+                          Text(
+                            '댓글 ${post.comments.length}개',
+                            style: FalletterTextStyle.body4.copyWith(
+                              color: FalletterColor.white,
+                            ),
+                          ),
                         ],
                       ),
                     ],
