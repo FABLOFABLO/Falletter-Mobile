@@ -14,7 +14,7 @@ class ApiEndPoints {
   static const emailMatch = "/auth/email/match";
 
   /// Community
-  static const post = "/community/posts"; // 하는 중
+  static const post = "/community/posts";
 
   /// Comment
   static const comment = "/comment"; // 하는 중

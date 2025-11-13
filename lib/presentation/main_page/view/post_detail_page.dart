@@ -260,9 +260,23 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                       onPressed: () async {
                         final text = _commentController.text.trim();
                         if (text.isEmpty) return;
-                        await notifier.addComment(widget.postId, text);
-                        _commentController.clear();
-                        await ref.read(postsProvider.notifier).fetchPosts();
+                        final success = await notifier.addComment(widget.postId, text);
+                        if (success) {
+                          await ref.read(postsProvider.notifier).fetchPosts();
+
+                          final posts = ref.read(postsProvider);
+                          final updatedPost =
+                          posts.firstWhere((p) => p.id == widget.postId, orElse: () => posts.first);
+
+                          if (updatedPost.comments.isNotEmpty) {
+                            final newComment = updatedPost.comments.last;
+                            final nicknameNotifier = ref.read(nicknameProvider.notifier);
+                            nicknameNotifier.getOrCreateNickname(widget.postId, newComment.username);
+                          }
+
+                          _commentController.clear();
+                          setState(() {});
+                        }
                       },
                     ),
                   ],

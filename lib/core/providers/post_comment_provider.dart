@@ -70,12 +70,16 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
     }
   }
 
-  Future<void> addComment(int postId, String text) async {
+  Future<bool> addComment(int postId, String text) async {
     try {
       final success = await _commentService.createComment(postId, text);
-      if (success) await fetchPosts();
+      if (success) {
+        await fetchPosts();
+      }
+      return success;
     } catch (e) {
       print('=== addComment error: $e');
+      return false;
     }
   }
 
