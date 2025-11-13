@@ -1,3 +1,10 @@
+DateTime parseServerTime(String dateStr) {
+  if (!dateStr.endsWith('Z')) {
+    dateStr = '${dateStr}Z';
+  }
+  return DateTime.parse(dateStr).toLocal();
+}
+
 class PostModel {
   final int id;
   final String title;
@@ -24,8 +31,8 @@ class PostModel {
       title: json['title'],
       content: json['content'],
       authorName: json['author']['name'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      createdAt: parseServerTime(json['created_at']),
+      updatedAt: parseServerTime(json['updated_at']),
       comments: commentsJson.map((e) => CommentModel.fromJson(e)).toList(),
     );
   }
@@ -72,7 +79,7 @@ class CommentModel {
       userId: json['user']['user_id'],
       username: json['user']['name'],
       comment: json['comment'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: parseServerTime(json['created_at']),
     );
   }
 }
