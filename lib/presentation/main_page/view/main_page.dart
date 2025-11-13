@@ -96,10 +96,12 @@ class _MainPageState extends ConsumerState<MainPage> {
                     ),
                   );
 
-                  if (result != null &&
-                      result is Map<String, bool> &&
-                      result['deleted'] == true) {
-                    await _refresh();
+                  if (result != null) {
+                    if (result is Map<String, bool> &&
+                        (result['deleted'] == true ||
+                            result['modified'] == true)) {
+                      await _refresh();
+                    }
                   }
                 },
                 child: Container(
@@ -161,13 +163,22 @@ class _MainPageState extends ConsumerState<MainPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final result = await Navigator.push(
+          final result = await Navigator.of(
             context,
-            MaterialPageRoute(builder: (_) => const PostPage()),
+            rootNavigator: true,
+          ).push(
+            MaterialPageRoute(
+              builder: (_) => const PostPage(),
+            ),
           );
 
-          if (result != null && result is Map<String, String>) {
-            await _refresh();
+          if (result != null) {
+            if (result is Map<String, bool> && result['deleted'] == true) {
+              await _refresh();
+            } else if (result is Map<String, dynamic> &&
+                result['modified'] == true) {
+              await _refresh();
+            }
           }
         },
         backgroundColor: Colors.transparent,

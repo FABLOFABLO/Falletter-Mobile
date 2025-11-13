@@ -37,7 +37,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   final TextEditingController _commentController = TextEditingController();
   bool isCommentFilled = false;
   bool _isModified = false;
-  bool _isDeleted = false;
+  final bool _isDeleted = false;
 
   late String _title;
   late String _content;
@@ -123,7 +123,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                   ),
                   onTap: () async {
                     Navigator.pop(context);
-                    final result = await Navigator.push<String>(
+                    final result = await Navigator.push<Map<String, String>>(
                       context,
                       MaterialPageRoute(
                         builder:
@@ -131,18 +131,22 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                                 PostEditPage(title: _title, content: _content),
                       ),
                     );
-                    if (result != null) {
+
+                    if (result != null && result.containsKey('content')) {
+                      final newTitle = result['title'] ?? _title;
+                      final newContent = result['content'] ?? _content;
+
                       setState(() {
-                        _content = result;
+                        _title = newTitle;
+                        _content = newContent;
                         _isModified = true;
                       });
-                      final notifier = ref.read(postsProvider.notifier);
-                      await notifier.updatePost(
-                        widget.postId,
-                        _title,
-                        _content,
-                      );
-                      ref.invalidate(postsProvider);
+
+                      await ref
+                          .read(postsProvider.notifier)
+                          .updatePost(widget.postId, newTitle, newContent);
+
+                      await ref.read(postsProvider.notifier).fetchPosts();
                     }
                   },
                 ),
@@ -154,11 +158,11 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
   void _handleBackNavigation() {
     if (_isDeleted) {
-      Navigator.pop(context);
+      Navigator.pop(context, {'deleted': true});
       return;
     }
     if (_isModified) {
-      Navigator.pop(context, {'title': _title, 'content': _content});
+      Navigator.pop(context, {'modified': true});
     } else {
       Navigator.pop(context);
     }
@@ -194,7 +198,6 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                 padding: const EdgeInsets.all(20),
                 child: PostHeaderCard(
                   nickname: postNickname,
-                  // 글 작성자 닉네임
                   time: timeago.format(widget.time.toLocal(), locale: 'ko'),
                   title: _title,
                   content: _content,
@@ -224,7 +227,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                         isAuthor: false,
                         onDelete: () async {
                           await notifier.deleteComment(post.id, comment.id);
-                          ref.invalidate(postsProvider);
+                          await ref.read(postsProvider.notifier).fetchPosts();
                         },
                       ),
                     );
@@ -259,7 +262,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                         if (text.isEmpty) return;
                         await notifier.addComment(widget.postId, text);
                         _commentController.clear();
-                        ref.invalidate(postsProvider);
+                        await ref.read(postsProvider.notifier).fetchPosts();
                       },
                     ),
                   ],

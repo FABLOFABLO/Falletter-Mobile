@@ -24,6 +24,7 @@ class _PostEditPageState extends State<PostEditPage> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
   bool isButtonEnabled = false;
+  bool _isSubmitting = false;
   final int maxLength = 200;
 
   @override
@@ -55,6 +56,31 @@ class _PostEditPageState extends State<PostEditPage> {
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_isSubmitting) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final editedContent = _contentController.text.trim();
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted) {
+        Navigator.pop(context, {
+          'title': _titleController.text,
+          'content': editedContent,
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
@@ -101,7 +127,10 @@ class _PostEditPageState extends State<PostEditPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('내용을 입력해주세요', style: FalletterTextStyle.subTitle1),
+                        Text(
+                          '내용을 입력해주세요',
+                          style: FalletterTextStyle.subTitle1,
+                        ),
                         Row(
                           children: [
                             Text(
@@ -140,9 +169,21 @@ class _PostEditPageState extends State<PostEditPage> {
                     const Spacer(),
                     CustomElevatedButton(
                       width: double.infinity,
-                      onPressed: isButtonEnabled ? _submit : null,
-                      child: const Text('수정하기'),
+                      onPressed:
+                          (isButtonEnabled && !_isSubmitting) ? _submit : null,
+                      child:
+                          _isSubmitting
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: FalletterColor.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text('수정하기'),
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -151,9 +192,5 @@ class _PostEditPageState extends State<PostEditPage> {
         ),
       ),
     );
-  }
-
-  void _submit() {
-    Navigator.pop(context, _contentController.text.trim());
   }
 }
