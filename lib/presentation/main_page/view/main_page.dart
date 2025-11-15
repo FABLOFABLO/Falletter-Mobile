@@ -59,7 +59,7 @@ class _MainPageState extends ConsumerState<MainPage> {
     final posts = ref.watch(postsProvider);
     final theme = ref.watch(themeProvider);
     final themeColors = appThemeColors[theme]!;
-    final nicknameNotifier = ref.read(nicknameProvider.notifier); // 읽기 전용
+    final nicknameNotifier = ref.read(nicknameProvider.notifier);
     final screenWidth = MediaQuery.of(context).size.width;
     final fabSize = screenWidth * 0.2;
 

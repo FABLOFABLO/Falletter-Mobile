@@ -30,9 +30,9 @@ class ApiEndPoints {
   static const letterSentAll = "/letter/sent/all";
 
   /// Answer
-  static const answerChoose = "/answer/choosen"; // 아직
+  static const answerChoose = "/answer/choose"; // 아직
   static const answerChoosen = "/answer/choosen"; // 아직
-  static const brickUsed = "/answer/used";
+  static const brickUsed = "/answer/used"; // 아직
 
   /// Questions
   static const questions = "/question/all"; // 하는중

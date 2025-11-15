@@ -64,10 +64,7 @@ class _PostPageState extends ConsumerState<PostPage> {
 
     if (success) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('게시물이 등록되었습니다.')),
-        );
-        Navigator.pop(context, {'title': title, 'content': content});
+        Navigator.pop(context, {'modified': true});
       }
     } else {
       if (mounted) {
