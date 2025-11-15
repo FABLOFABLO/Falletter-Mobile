@@ -16,8 +16,9 @@ final commentServiceProvider = Provider<CommentService>((ref) {
   return CommentService(token);
 });
 
-final postsProvider =
-StateNotifierProvider<PostsNotifier, List<PostModel>>((ref) {
+final postsProvider = StateNotifierProvider<PostsNotifier, List<PostModel>>((
+  ref,
+) {
   final service = ref.watch(postServiceProvider);
   return PostsNotifier(service);
 });
@@ -39,6 +40,25 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
     }
   }
 
+  Future<void> fetchPostById(int postId) async {
+    try {
+      final post = await _service.getPostDetail(postId);
+
+      final updated = [...state];
+      final index = updated.indexWhere((p) => p.id == postId);
+
+      if (index != -1) {
+        updated[index] = post;
+      } else {
+        updated.add(post);
+      }
+
+      state = updated;
+    } catch (e) {
+      print('=== fetchPostById error: $e');
+    }
+  }
+
   Future<void> addPost(String title, String content) async {
     try {
       final success = await _service.createPost(title, content);
@@ -51,7 +71,7 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
   Future<void> updatePost(int postId, String title, String content) async {
     try {
       final success = await _service.updatePost(postId, title, content);
-      if (success) await fetchPosts();
+      if (success) await fetchPostById(postId);
     } catch (e) {
       print('=== updatePost error: $e');
     }
@@ -74,7 +94,7 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
     try {
       final success = await _commentService.createComment(postId, text);
       if (success) {
-        await fetchPosts();
+        await fetchPostById(postId);
       }
       return success;
     } catch (e) {
@@ -87,12 +107,7 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
     try {
       final success = await _commentService.deleteComment(commentId);
       if (success) {
-        state = state.map((p) {
-          if (p.id != postId) return p;
-          final updatedComments =
-          p.comments.where((c) => c.id != commentId).toList();
-          return p.copyWith(comments: updatedComments);
-        }).toList();
+        await fetchPostById(postId);
       }
       return success;
     } catch (e) {
