@@ -1,15 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:falletter/core/providers/post_comment_provider.dart';
-import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/nickname_provider.dart';
+import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/presentation/main_page/view/post_detail_page.dart';
 import 'package:falletter/presentation/main_page/view/post_page.dart';
-import 'package:flutter/material.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class MainPage extends ConsumerStatefulWidget {
   const MainPage({super.key});
@@ -25,18 +25,7 @@ class _MainPageState extends ConsumerState<MainPage> {
     timeago.setLocaleMessages('ko', timeago.KoMessages());
 
     Future.microtask(() async {
-      await ref.read(postsProvider.notifier).fetchPosts();
-
-      final posts = ref.read(postsProvider);
-      final nicknameNotifier = ref.read(nicknameProvider.notifier);
-
-      for (var post in posts) {
-        nicknameNotifier.getOrCreateNickname(post.id, post.authorName);
-        for (var comment in post.comments) {
-          nicknameNotifier.getOrCreateNickname(post.id, comment.username);
-        }
-      }
-      setState(() {});
+      await _refresh();
     });
   }
 
@@ -96,12 +85,11 @@ class _MainPageState extends ConsumerState<MainPage> {
                     ),
                   );
 
-                  if (result != null) {
-                    if (result is Map<String, bool> &&
-                        (result['deleted'] == true ||
-                            result['modified'] == true)) {
-                      await _refresh();
-                    }
+                  if (result != null &&
+                      result is Map<String, bool> &&
+                      (result['deleted'] == true ||
+                          result['modified'] == true)) {
+                    await _refresh();
                   }
                 },
                 child: Container(
@@ -163,22 +151,16 @@ class _MainPageState extends ConsumerState<MainPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final result = await Navigator.of(
-            context,
-            rootNavigator: true,
-          ).push(
-            MaterialPageRoute(
-              builder: (_) => const PostPage(),
-            ),
+          final result = await Navigator.of(context, rootNavigator: true).push(
+            MaterialPageRoute(builder: (_) => const PostPage()),
           );
 
-          if (result != null) {
-            if (result is Map<String, bool> && result['deleted'] == true) {
-              await _refresh();
-            } else if (result is Map<String, dynamic> &&
-                result['modified'] == true) {
-              await _refresh();
-            }
+          if (result != null &&
+              result is Map<String, dynamic> && (
+              result['deleted'] == true ||
+                  result['modified'] == true
+          )) {
+            await _refresh();
           }
         },
         backgroundColor: Colors.transparent,

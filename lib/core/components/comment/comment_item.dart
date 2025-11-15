@@ -36,18 +36,39 @@ class CommentItem extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(nickname, style: FalletterTextStyle.body4.copyWith(color: FalletterColor.gray200)),
+                    Text(
+                      nickname,
+                      style: FalletterTextStyle.body4.copyWith(
+                        color: FalletterColor.gray200,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Text(time, style: FalletterTextStyle.body4.copyWith(color: FalletterColor.gray200)),
+                    Text(
+                      time,
+                      style: FalletterTextStyle.body4.copyWith(
+                        color: FalletterColor.gray200,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(text, style: FalletterTextStyle.body4.copyWith(color: FalletterColor.white)),
+                Text(
+                  text,
+                  style: FalletterTextStyle.body4.copyWith(
+                    color: FalletterColor.white,
+                  ),
+                ),
               ],
             ),
           ),
-          if (isAuthor && onDelete != null)
-            DeleteCommentButton(onPressed: onDelete!),
+          DeleteCommentButton(
+            onPressed: () {
+              if (isAuthor && onDelete != null) {
+                print("Delete button pressed");
+                onDelete!();
+              }
+            },
+          ),
         ],
       ),
     );

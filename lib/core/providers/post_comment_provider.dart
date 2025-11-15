@@ -35,6 +35,9 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
     try {
       final posts = await _service.getAllPosts();
       state = posts;
+      for (var post in posts) {
+        await fetchPostById(post.id);
+      }
     } catch (e) {
       print('=== fetchPosts error: $e');
     }
@@ -106,6 +109,7 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
   Future<bool> deleteComment(int postId, int commentId) async {
     try {
       final success = await _commentService.deleteComment(commentId);
+      print("deleteComment success: $success");
       if (success) {
         await fetchPostById(postId);
       }

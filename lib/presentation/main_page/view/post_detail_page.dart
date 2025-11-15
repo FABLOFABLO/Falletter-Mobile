@@ -1,3 +1,7 @@
+import 'package:falletter/presentation/main_page/component/post_detail.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:falletter/core/components/comment/comment_item.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/components/modal/default_modal.dart';
@@ -5,13 +9,10 @@ import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/components/text_form_field/text_form_field.dart';
 import 'package:falletter/core/components/button/send_button.dart';
-import 'package:falletter/presentation/main_page/component/post_detail.dart';
 import 'package:falletter/presentation/main_page/view/post_edit_page.dart';
 import 'package:falletter/core/providers/post_comment_provider.dart';
 import 'package:falletter/core/providers/nickname_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:falletter/core/providers/auth_token_provider.dart';
 
 class PostDetailPage extends ConsumerStatefulWidget {
   final int postId;
@@ -37,7 +38,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   final TextEditingController _commentController = TextEditingController();
   bool isCommentFilled = false;
   bool _isModified = false;
-  final bool _isDeleted = false;
+  bool _isDeleted = false;
 
   late String _title;
   late String _content;
@@ -48,6 +49,24 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     _title = widget.title;
     _content = widget.content;
     timeago.setLocaleMessages('ko', timeago.KoMessages());
+
+    Future.microtask(() async {
+      await ref.read(postsProvider.notifier).fetchPostById(widget.postId);
+
+      final posts = ref.read(postsProvider);
+      final post = posts.firstWhere(
+        (p) => p.id == widget.postId,
+        orElse: () => posts.first,
+      );
+      final nicknameNotifier = ref.read(nicknameProvider.notifier);
+      nicknameNotifier.getOrCreateNickname(post.id, post.authorName);
+
+      for (var comment in post.comments) {
+        nicknameNotifier.getOrCreateNickname(post.id, comment.username);
+      }
+
+      setState(() {});
+    });
 
     _commentController.addListener(() {
       setState(() {
@@ -71,10 +90,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             onLeftPressed: () => Navigator.of(ctx).pop(),
             onRightPressed: () async {
               Navigator.of(ctx).pop();
-
               final success = await notifier.deletePost(postId);
-
               if (success && mounted) {
+                _isDeleted = true;
                 Navigator.of(
                   context,
                   rootNavigator: true,
@@ -145,7 +163,6 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                       await ref
                           .read(postsProvider.notifier)
                           .updatePost(widget.postId, newTitle, newContent);
-
                       await ref.read(postsProvider.notifier).fetchPosts();
                     }
                   },
@@ -183,6 +200,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       post.authorName,
     );
 
+    final currentUser = ref.watch(accessTokenProvider); // 로그인 사용자 확인용
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -211,9 +229,9 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                   itemCount: post.comments.length,
                   itemBuilder: (context, index) {
                     final comment = post.comments[index];
-
                     final commentNickname = nicknameNotifier
                         .getOrCreateNickname(post.id, comment.username);
+                    final isAuthor = comment.username == currentUser;
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -224,11 +242,20 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                           locale: 'ko',
                         ),
                         text: comment.comment,
-                        isAuthor: false,
-                        onDelete: () async {
-                          await notifier.deleteComment(post.id, comment.id);
-                          await ref.read(postsProvider.notifier).fetchPosts();
-                        },
+                        isAuthor: isAuthor,
+                        onDelete:
+                            isAuthor
+                                ? () async {
+                                  final success = await notifier.deleteComment(
+                                    post.id,
+                                    comment.id,
+                                  );
+                                  if (success) {
+                                    await notifier.fetchPosts();
+                                    setState(() {});
+                                  }
+                                }
+                                : null,
                       ),
                     );
                   },
@@ -266,27 +293,6 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                           text,
                         );
                         if (success) {
-                          await ref
-                              .read(postsProvider.notifier)
-                              .fetchPostById(widget.postId);
-
-                          final posts = ref.read(postsProvider);
-                          final updatedPost = posts.firstWhere(
-                            (p) => p.id == widget.postId,
-                            orElse: () => posts.first,
-                          );
-
-                          if (updatedPost.comments.isNotEmpty) {
-                            final newComment = updatedPost.comments.last;
-                            final nicknameNotifier = ref.read(
-                              nicknameProvider.notifier,
-                            );
-                            nicknameNotifier.getOrCreateNickname(
-                              widget.postId,
-                              newComment.username,
-                            );
-                          }
-
                           _commentController.clear();
                           setState(() {});
                         }
