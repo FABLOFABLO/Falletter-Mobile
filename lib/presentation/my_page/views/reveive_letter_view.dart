@@ -4,6 +4,8 @@ import 'package:falletter/core/components/modal/letter_modal.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/providers/receive_letter_provider.dart';
+import 'package:falletter/core/providers/user_provider.dart';
+import 'package:falletter/models/received_letter_model.dart';
 import 'package:falletter/presentation/my_page/components/received_letter_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,35 +34,43 @@ class _ReceiveLetterViewState extends ConsumerState<ReceiveLetterView> {
   }
 
   void _setupAutoRefresh() {
-    _autoRefreshTimer?.cancel();
     _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
       ref.refresh(receivedLettersProvider);
     });
   }
 
   Future<void> _refreshLetters() async {
-    /// 서버 연동 시, 실제로 새로운 레터 존재 여부를 확인 후 refresh 실행
     ref.refresh(receivedLettersProvider);
   }
 
-  void _showLetterModal(BuildContext context, ReceivedLetter letter) {
+  void _showLetterModal(BuildContext context, ReceivedLetterModel letter) {
+    final userInfoAsync = ref.read(userInfoProvider);
+
+    String myName = '나';
+
+    userInfoAsync.whenData((data) {
+      if (data['name'] != null) {
+        myName = data['name'] as String;
+      }
+    });
+
+    final arrivedAt = DateFormat('M월 d일 도착').format(letter.createdAt);
+
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) => LetterModal(
-        dear: '${letter.receiptientInfo}에게',
+        dear: "$myName에게",
         content: letter.content,
-        bottom: '누군가 보냄',
-        onClose: () {
-          Navigator.of(dialogContext).pop();
-        },
+        bottom: arrivedAt,
+        onClose: () => Navigator.of(dialogContext).pop(),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final letters = ref.watch(receivedLettersProvider);
+    final lettersAsync = ref.watch(receivedLettersProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -70,35 +80,59 @@ class _ReceiveLetterViewState extends ConsumerState<ReceiveLetterView> {
             const Header(showBackButton: true),
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Text(
-                '내가 받은 레터',
-                style: FalletterTextStyle.title2,
-              ),
+              child: Text('내가 받은 레터', style: FalletterTextStyle.title2),
             ),
             Expanded(
-              child: RefreshIndicator(
-                backgroundColor: FalletterColor.middleBlack,
-                color: FalletterColor.white,
-                onRefresh: _refreshLetters,
-                child: ListView.separated(
-                  itemCount: letters.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final letter = letters[index];
-                    final preview = letter.content.length > 35
-                        ? '${letter.content.substring(0, 35)}...'
-                        : letter.content;
-                    final arrivedAt =
-                    DateFormat('M월 d일 도착').format(letter.receivedAt);
-
-                    return GestureDetector(
-                      onTap: () => _showLetterModal(context, letter),
-                      child: ReceivedLetterBox(
-                        arrivedAt: arrivedAt,
-                        preview: preview,
+              child: lettersAsync.when(
+                data: (letters) {
+                  if (letters.isEmpty) {
+                    return Center(
+                      child: Text(
+                        '받은 레터가 없습니다.',
+                        style: FalletterTextStyle.body2,
                       ),
                     );
-                  },
+                  }
+
+                  letters.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+                  return RefreshIndicator(
+                    onRefresh: _refreshLetters,
+                    backgroundColor: FalletterColor.middleBlack,
+                    color: FalletterColor.white,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      itemCount: letters.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final letter = letters[index];
+                        final preview = letter.content.length > 35
+                            ? '${letter.content.substring(0, 35)}...'
+                            : letter.content;
+
+                        final arrivedAt =
+                        DateFormat('M월 d일 도착').format(letter.createdAt);
+
+                        return GestureDetector(
+                          onTap: () => _showLetterModal(context, letter),
+                          child: ReceivedLetterBox(
+                            arrivedAt: arrivedAt,
+                            preview: preview,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+                loading: () =>
+                const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(
+                  child: Text(
+                    '오류 발생: ${err.toString()}',
+                    style: FalletterTextStyle.body2,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),

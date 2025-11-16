@@ -158,7 +158,8 @@ class _MainPageState extends ConsumerState<MainPage> {
           if (result != null &&
               result is Map<String, dynamic> && (
               result['deleted'] == true ||
-                  result['modified'] == true
+                  result['modified'] == true ||
+                  result['comment_modified'] == true
           )) {
             await _refresh();
           }

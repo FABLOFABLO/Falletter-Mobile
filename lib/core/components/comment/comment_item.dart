@@ -61,14 +61,10 @@ class CommentItem extends StatelessWidget {
               ],
             ),
           ),
-          DeleteCommentButton(
-            onPressed: () {
-              if (isAuthor && onDelete != null) {
-                print("Delete button pressed");
-                onDelete!();
-              }
-            },
-          ),
+          if (onDelete != null)
+            DeleteCommentButton(
+              onPressed: onDelete!,
+            ),
         ],
       ),
     );

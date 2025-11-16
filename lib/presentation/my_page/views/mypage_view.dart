@@ -1,8 +1,9 @@
 import 'package:falletter/core/components/modal/default_modal.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/core/providers/auth_token_provider.dart';
 import 'package:falletter/core/providers/item_count_provider.dart';
+import 'package:falletter/core/providers/receive_letter_provider.dart';
+import 'package:falletter/core/providers/sent_letter_provider.dart';
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/user_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
@@ -22,6 +23,17 @@ class MypageView extends ConsumerWidget {
   final Gradient? gradient;
 
   const MypageView({super.key, this.gradient});
+
+  Future<void> _refreshData(WidgetRef ref) async {
+    ref.invalidate(userInfoProvider);
+    ref.invalidate(receivedLettersProvider);
+    ref.invalidate(sentLettersProvider);
+    // 4. 브릭 사용 내역 새로고침
+    // usedBricksProvider의 정의가 가정되어 있습니다.
+    // ref.invalidate(usedBricksProvider);
+
+    await ref.read(userInfoProvider.future).catchError((_) => null);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +55,7 @@ class MypageView extends ConsumerWidget {
           onRightPressed: () async {
             Navigator.of(context).pop();
 
-            ref.invalidate(accessTokenProvider);
+            // ref.invalidate(accessTokenProvider);
             ref.invalidate(userInfoProvider);
 
             if (context.mounted) {
@@ -117,88 +129,95 @@ class MypageView extends ConsumerWidget {
           );
         });
 
-        return SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 60),
-                _ProfileHeader(
-                  nickname: nickname,
-                  attendanceDays: attendanceDays,
-                ),
-                const SizedBox(height: 12),
+        return RefreshIndicator(
+          onRefresh: () => _refreshData(ref),
+          color: FalletterColor.white,
+          backgroundColor: FalletterColor.middleBlack,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 60),
+                  _ProfileHeader(
+                    nickname: nickname,
+                    attendanceDays: attendanceDays,
+                  ),
+                  const SizedBox(height: 12),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: ItemBox(
-                        item: SvgPicture.asset(
-                          themeColors.letterSvg,
-                          width: 36,
-                          height: 25,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ItemBox(
+                          item: SvgPicture.asset(
+                            themeColors.letterSvg,
+                            width: 36,
+                            height: 25,
+                          ),
+                          itemKey: 'letter',
                         ),
-                        itemKey: 'letter',
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ItemBox(
-                        item: SvgPicture.asset(
-                          themeColors.brickSvg,
-                          width: 36,
-                          height: 38,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ItemBox(
+                          item: SvgPicture.asset(
+                            themeColors.brickSvg,
+                            width: 36,
+                            height: 38,
+                          ),
+                          itemKey: 'brick',
                         ),
-                        itemKey: 'brick',
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
 
-                const SizedBox(height: 20),
-                TitleSection(
-                  title: '내역',
-                  items: ['보낸 레터', '받은 레터', '브릭 사용 내역'],
-                  onTaps: [
-                        () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SentLetterView(),
+                  const SizedBox(height: 20),
+                  TitleSection(
+                    title: '내역',
+                    items: ['보낸 레터', '받은 레터', '브릭 사용 내역'],
+                    onTaps: [
+                          () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SentLetterView(),
+                        ),
                       ),
-                    ),
-                        () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ReceiveLetterView(),
+                          () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ReceiveLetterView(),
+                        ),
                       ),
-                    ),
-                        () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const UsedBrickView(),
+                          () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UsedBrickView(),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                TitleSection(
-                  title: '시스템',
-                  items: ['테마 설정'],
-                  onTaps: [
-                        () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ThemeView(),
+                    ],
+                  ),
+                  TitleSection(
+                    title: '시스템',
+                    items: ['테마 설정'],
+                    onTaps: [
+                          () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ThemeView(),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                TitleSection(
-                  title: '계정',
-                  items: ['로그아웃'],
-                  onTaps: [() => showLogoutConfirmDialog(context)],
-                ),
-              ],
+                    ],
+                  ),
+                  TitleSection(
+                    title: '계정',
+                    items: ['로그아웃'],
+                    onTaps: [() => showLogoutConfirmDialog(context)],
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         );

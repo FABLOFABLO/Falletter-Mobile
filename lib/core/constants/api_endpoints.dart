@@ -17,7 +17,7 @@ class ApiEndPoints {
   static const post = "/community/posts";
 
   /// Comment
-  static const comment = "/comment"; // 하는 중
+  static const comment = "/comment";
 
   /// Item
   static const letterCount = "/item/letter/count";
@@ -28,11 +28,16 @@ class ApiEndPoints {
   /// Letter
   static const letterSent = "/letter/sent";
   static const letterSentAll = "/letter/sent/all";
+  static const letterReceived = "/letter/received/all";
+  static const letterReceivedDetail = "/letter/received";
+
+  /// history
+  static const brickSave = "/history/brick/save"; // 아직
+  static const brickUsed = "/history/brick/used"; // 아직
 
   /// Answer
   static const answerChoose = "/answer/choose"; // 아직
   static const answerChoosen = "/answer/choosen"; // 아직
-  static const brickUsed = "/answer/used"; // 아직
 
   /// Questions
   static const questions = "/question/all"; // 하는중

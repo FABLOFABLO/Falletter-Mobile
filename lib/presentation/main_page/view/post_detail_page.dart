@@ -1,3 +1,4 @@
+import 'package:falletter/core/providers/user_provider.dart';
 import 'package:falletter/presentation/main_page/component/post_detail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,6 @@ import 'package:falletter/core/components/button/send_button.dart';
 import 'package:falletter/presentation/main_page/view/post_edit_page.dart';
 import 'package:falletter/core/providers/post_comment_provider.dart';
 import 'package:falletter/core/providers/nickname_provider.dart';
-import 'package:falletter/core/providers/auth_token_provider.dart';
 
 class PostDetailPage extends ConsumerStatefulWidget {
   final int postId;
@@ -39,6 +39,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
   bool isCommentFilled = false;
   bool _isModified = false;
   bool _isDeleted = false;
+  bool _isCommentModified = false;
 
   late String _title;
   late String _content;
@@ -55,7 +56,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
 
       final posts = ref.read(postsProvider);
       final post = posts.firstWhere(
-        (p) => p.id == widget.postId,
+            (p) => p.id == widget.postId,
         orElse: () => posts.first,
       );
       final nicknameNotifier = ref.read(nicknameProvider.notifier);
@@ -81,95 +82,88 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (ctx) => DefaultModal(
-            title: '게시물 삭제',
-            description: '게시물이 영구 삭제됩니다.\n정말 삭제하시겠어요?',
-            leftText: '취소',
-            rightText: '삭제',
-            onLeftPressed: () => Navigator.of(ctx).pop(),
-            onRightPressed: () async {
-              Navigator.of(ctx).pop();
-              final success = await notifier.deletePost(postId);
-              if (success && mounted) {
-                _isDeleted = true;
-                Navigator.of(
-                  context,
-                  rootNavigator: true,
-                ).pop({'deleted': true});
-              }
-            },
-          ),
+      builder: (ctx) => DefaultModal(
+        title: '게시물 삭제',
+        description: '게시물이 영구 삭제됩니다.\n정말 삭제하시겠어요?',
+        leftText: '취소',
+        rightText: '삭제',
+        onLeftPressed: () => Navigator.of(ctx).pop(),
+        onRightPressed: () async {
+          Navigator.of(ctx).pop();
+          final success = await notifier.deletePost(postId);
+          if (success && mounted) {
+            _isDeleted = true;
+            Navigator.of(context, rootNavigator: true).pop({'deleted': true});
+          }
+        },
+      ),
     );
   }
 
   void _showActionDialog() {
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            backgroundColor: FalletterColor.middleBlack,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Center(
-                    child: Text(
-                      '삭제',
-                      style: FalletterTextStyle.button.copyWith(
-                        color: FalletterColor.error,
-                      ),
-                    ),
+      builder: (context) => Dialog(
+        backgroundColor: FalletterColor.middleBlack,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Center(
+                child: Text(
+                  '삭제',
+                  style: FalletterTextStyle.button.copyWith(
+                    color: FalletterColor.error,
                   ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showDeleteConfirmDialog(widget.postId);
-                  },
                 ),
-                const Divider(height: 1, color: FalletterColor.gray900),
-                ListTile(
-                  title: Center(
-                    child: Text(
-                      '수정',
-                      style: FalletterTextStyle.button.copyWith(
-                        color: FalletterColor.gray50,
-                      ),
-                    ),
-                  ),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final result = await Navigator.push<Map<String, String>>(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                PostEditPage(title: _title, content: _content),
-                      ),
-                    );
-
-                    if (result != null && result.containsKey('content')) {
-                      final newTitle = result['title'] ?? _title;
-                      final newContent = result['content'] ?? _content;
-
-                      setState(() {
-                        _title = newTitle;
-                        _content = newContent;
-                        _isModified = true;
-                      });
-
-                      await ref
-                          .read(postsProvider.notifier)
-                          .updatePost(widget.postId, newTitle, newContent);
-                      await ref.read(postsProvider.notifier).fetchPosts();
-                    }
-                  },
-                ),
-              ],
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showDeleteConfirmDialog(widget.postId);
+              },
             ),
-          ),
+            const Divider(height: 1, color: FalletterColor.gray900),
+            ListTile(
+              title: Center(
+                child: Text(
+                  '수정',
+                  style: FalletterTextStyle.button.copyWith(
+                    color: FalletterColor.gray50,
+                  ),
+                ),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                final result = await Navigator.push<Map<String, String>>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PostEditPage(title: _title, content: _content),
+                  ),
+                );
+
+                if (result != null && result.containsKey('content')) {
+                  final newTitle = result['title'] ?? _title;
+                  final newContent = result['content'] ?? _content;
+
+                  setState(() {
+                    _title = newTitle;
+                    _content = newContent;
+                    _isModified = true;
+                  });
+
+                  await ref
+                      .read(postsProvider.notifier)
+                      .updatePost(widget.postId, newTitle, newContent);
+                  await ref.read(postsProvider.notifier).fetchPosts();
+                }
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -178,11 +172,35 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       Navigator.pop(context, {'deleted': true});
       return;
     }
+
+    final result = <String, bool>{};
     if (_isModified) {
-      Navigator.pop(context, {'modified': true});
+      result['modified'] = true;
+    }
+    if (_isCommentModified) {
+      result['comment_modified'] = true;
+    }
+
+    if (result.isNotEmpty) {
+      Navigator.pop(context, result);
     } else {
       Navigator.pop(context);
     }
+  }
+
+  void _showNotAuthorSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '본인이 작성한 댓글만 삭제할 수 있습니다',
+          style: FalletterTextStyle.body2.copyWith(
+            color: FalletterColor.black,
+          ),
+        ),
+        backgroundColor: FalletterColor.error,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -190,7 +208,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
     final notifier = ref.read(postsProvider.notifier);
     final posts = ref.watch(postsProvider);
     final post = posts.firstWhere(
-      (p) => p.id == widget.postId,
+          (p) => p.id == widget.postId,
       orElse: () => posts.first,
     );
 
@@ -200,7 +218,13 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
       post.authorName,
     );
 
-    final currentUser = ref.watch(accessTokenProvider); // 로그인 사용자 확인용
+    // 현재 로그인한 사용자 정보 가져오기
+    final userInfoAsync = ref.watch(userInfoProvider);
+    final currentUserName = userInfoAsync.maybeWhen(
+      data: (data) => data['name'] as String?,
+      orElse: () => null,
+    );
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -231,7 +255,10 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                     final comment = post.comments[index];
                     final commentNickname = nicknameNotifier
                         .getOrCreateNickname(post.id, comment.username);
-                    final isAuthor = comment.username == currentUser;
+
+                    // 현재 사용자가 댓글 작성자인지 확인
+                    final isMyComment = currentUserName != null &&
+                        comment.username == currentUserName;
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -242,20 +269,26 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                           locale: 'ko',
                         ),
                         text: comment.comment,
-                        isAuthor: isAuthor,
-                        onDelete:
-                            isAuthor
-                                ? () async {
-                                  final success = await notifier.deleteComment(
-                                    post.id,
-                                    comment.id,
-                                  );
-                                  if (success) {
-                                    await notifier.fetchPosts();
-                                    setState(() {});
-                                  }
-                                }
-                                : null,
+                        isAuthor: isMyComment,
+                        onDelete: isMyComment
+                            ? () async {
+                          // 내 댓글이면 삭제 진행
+                          print("=== Attempting to delete comment ${comment.id}");
+                          final success = await notifier.deleteComment(
+                            post.id,
+                            comment.id,
+                          );
+                          print("=== Delete success: $success");
+
+                          if (success) {
+                            _isCommentModified = true;
+                            setState(() {});
+                          }
+                        }
+                            : () {
+                          // 내 댓글이 아니면 스낵바 표시
+                          _showNotAuthorSnackBar();
+                        },
                       ),
                     );
                   },
@@ -294,6 +327,23 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
                         );
                         if (success) {
                           _commentController.clear();
+                          _isCommentModified = true;
+
+                          // 새 댓글의 닉네임 생성
+                          final posts = ref.read(postsProvider);
+                          final updatedPost = posts.firstWhere(
+                                (p) => p.id == widget.postId,
+                            orElse: () => posts.first,
+                          );
+
+                          if (updatedPost.comments.isNotEmpty) {
+                            final newComment = updatedPost.comments.last;
+                            nicknameNotifier.getOrCreateNickname(
+                              widget.postId,
+                              newComment.username,
+                            );
+                          }
+
                           setState(() {});
                         }
                       },

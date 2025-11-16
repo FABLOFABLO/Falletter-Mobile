@@ -26,6 +26,7 @@ final userInfoProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     final brickCount = results[2] as int;
 
     return {
+      'id': userData['id'],
       'name': userData['name'],
       'schoolNumber': userData['schoolNumber'],
       'email': userData['email'],

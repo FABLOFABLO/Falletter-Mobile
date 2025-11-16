@@ -17,7 +17,7 @@ class UserModel {
     return UserModel(
       id: json['id'],
       email: json['email'],
-      name: json['name'],
+      name: json['name'] ?? '유저',
       schoolNumber: json['schoolNumber'],
       gender: json['gender'],
     );

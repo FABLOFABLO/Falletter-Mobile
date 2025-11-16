@@ -1,7 +1,7 @@
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/utils/sent_time_utils.dart';
-import 'package:falletter/presentation/my_page/components/letter_box.dart';
+import 'package:falletter/presentation/my_page/components/reusable_box.dart';
 import 'package:flutter/material.dart';
 
 class SentLetterBox extends StatelessWidget {
