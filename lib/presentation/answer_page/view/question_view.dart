@@ -19,15 +19,48 @@ class QuestionView extends ConsumerWidget {
     final currentIndex = ref.watch(currentQuestionIndexProvider);
     final total = ref.watch(totalQuestionsProvider);
     final selectedIndex = ref.watch(selectedIndexProvider);
-    final questions = ref.watch(questionsProvider);
-    final options = ref.watch(optionsProvider);
-    final question = questions[currentIndex];
-    final emojis = ref.watch(questionEmojisProvider);
-    final emoji = emojis[currentIndex];
+    final selectedQuestions = ref.watch(selectedQuestionsProvider);
+    final options = ref.watch(currentQuestionOptionsProvider);
+    final submitAnswer = ref.read(submitAnswerProvider);
 
-    void handleAnswer(int index) {
+    if (selectedQuestions.isEmpty || currentIndex >= selectedQuestions.length) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: FalletterColor.white,
+        ),
+      );
+    }
+
+    final question = selectedQuestions[currentIndex];
+
+    void handleAnswer(int index) async {
+      if (index >= options.length) return;
+
+      final selectedStudent = options[index];
+
       ref.read(selectedIndexProvider.notifier).state = index;
-      Future.delayed(const Duration(milliseconds: 200), onNext);
+
+      if (selectedStudent.id > 0) {
+        try {
+          print('=== Submitting: questionId=${question.id}, targetUserId=${selectedStudent.id}');
+          await submitAnswer(question.id, selectedStudent.id);
+          print('=== Submit success');
+        } catch (e) {
+          print('=== Submit answer error: $e');
+        }
+      } else {
+        print('=== Skipping "유저" submission');
+      }
+
+      Future.delayed(const Duration(milliseconds: 200), () {
+        ref.read(selectedIndexProvider.notifier).state = null;
+        onNext();
+      });
+    }
+
+    void handleSkip() {
+      ref.read(selectedIndexProvider.notifier).state = null;
+      onNext();
     }
 
     return Column(
@@ -42,15 +75,31 @@ class QuestionView extends ConsumerWidget {
             shape: BoxShape.circle,
           ),
           child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 100)),
+            child: Text(
+              question.emoji,
+              style: const TextStyle(fontSize: 100),
+            ),
           ),
         ),
         const SizedBox(height: 32),
-        Text(question, style: FalletterTextStyle.title2),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            question.question,
+            style: FalletterTextStyle.title2,
+            textAlign: TextAlign.center,
+          ),
+        ),
         const SizedBox(height: 32),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
+          child: options.isEmpty
+              ? const Center(
+            child: CircularProgressIndicator(
+              color: FalletterColor.white,
+            ),
+          )
+              : Column(
             children: [
               for (int i = 0; i < 2; i++)
                 Padding(
@@ -59,9 +108,9 @@ class QuestionView extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.only(right: 6),
                           child: AnswerButton(
-                            label: options[i * 2],
+                            label: options[i * 2].name,
                             isSelected: selectedIndex == i * 2,
                             onPressed: () => handleAnswer(i * 2),
                           ),
@@ -69,9 +118,9 @@ class QuestionView extends ConsumerWidget {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 12),
+                          padding: const EdgeInsets.only(left: 6),
                           child: AnswerButton(
-                            label: options[i * 2 + 1],
+                            label: options[i * 2 + 1].name,
                             isSelected: selectedIndex == i * 2 + 1,
                             onPressed: () => handleAnswer(i * 2 + 1),
                           ),
@@ -85,7 +134,7 @@ class QuestionView extends ConsumerWidget {
         ),
         const SizedBox(height: 32),
         TextButton(
-          onPressed: onNext,
+          onPressed: handleSkip,
           child: Text(
             '건너뛰기',
             style: FalletterTextStyle.body3.copyWith(

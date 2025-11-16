@@ -21,6 +21,9 @@ class _AnswerPageState extends ConsumerState<AnswerPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(allQuestionsProvider);
+      ref.read(allStudentsProvider);
+
       if (ref.read(answerStateProvider) == AnswerState.waiting) {
         startCountdown();
       }
@@ -36,6 +39,8 @@ class _AnswerPageState extends ConsumerState<AnswerPage> {
       ref.read(selectedIndexProvider.notifier).state = null;
     } else {
       ref.read(answerStateProvider.notifier).state = AnswerState.waiting;
+      ref.read(currentQuestionIndexProvider.notifier).state = 0;
+      ref.read(selectedIndexProvider.notifier).state = null;
       startCountdown();
     }
   }
@@ -48,6 +53,8 @@ class _AnswerPageState extends ConsumerState<AnswerPage> {
         setState(() => countdown -= const Duration(seconds: 1));
       } else {
         timer.cancel();
+        ref.invalidate(allQuestionsProvider);
+        ref.invalidate(allStudentsProvider);
         ref.read(currentQuestionIndexProvider.notifier).state = 0;
         ref.read(answerStateProvider.notifier).state = AnswerState.answering;
         ref.read(selectedIndexProvider.notifier).state = null;
@@ -65,15 +72,15 @@ class _AnswerPageState extends ConsumerState<AnswerPage> {
   @override
   Widget build(BuildContext context) {
     final answerState = ref.watch(answerStateProvider);
+
     return Scaffold(
       body: SafeArea(
-        child:
-            answerState == AnswerState.waiting
-                ? TimerView(
-                  countdown: countdown,
-                  initialCountdown: initialCountdown,
-                )
-                : QuestionView(onNext: goToNextQuestion),
+        child: answerState == AnswerState.waiting
+            ? TimerView(
+          countdown: countdown,
+          initialCountdown: initialCountdown,
+        )
+            : QuestionView(onNext: goToNextQuestion),
       ),
     );
   }
