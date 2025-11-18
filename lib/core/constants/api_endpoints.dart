@@ -36,9 +36,9 @@ class ApiEndPoints {
   static const brickUsed = "/history/brick/used"; // 아직
 
   /// Answer
-  static const answerChoose = "/answer/choose"; // 아직
-  static const answerChoosen = "/answer/choosen"; // 아직
+  static const answerChoose = "/answer/choose";
+  static const answerChoosen = "/answer/chosen";
 
   /// Questions
-  static const questions = "/question/all"; // 하는중
+  static const questions = "/question/all";
 }

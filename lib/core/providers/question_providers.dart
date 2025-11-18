@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:falletter/core/providers/user_provider.dart';
+import 'package:falletter/models/choosen_answer_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/providers/auth_token_provider.dart';
 import 'package:falletter/services/question_service.dart';
@@ -138,3 +139,15 @@ class SubmitAnswerNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 }
+
+final chosenAnswersProvider =
+FutureProvider<List<ChosenAnswerModel>>((ref) async {
+  final service = ref.read(questionServiceProvider);
+
+  try {
+    final result = await service.fetchChosenAnswers();
+    return result;
+  } catch (e) {
+    return [];
+  }
+});
