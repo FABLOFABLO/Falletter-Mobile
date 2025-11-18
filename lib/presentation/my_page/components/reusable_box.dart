@@ -1,5 +1,4 @@
 import 'package:falletter/core/constants/color.dart';
-import 'package:falletter/core/constants/text_style.dart';
 import 'package:flutter/material.dart';
 
 class ReusableLetterBox extends StatelessWidget {
