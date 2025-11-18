@@ -263,72 +263,74 @@ class NoticeDetailView extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          children: [
+            // ⛔ Header는 padding 없음
+            Header(
+              showBackButton: true,
+              rightWidget: Row(
                 children: [
-                  const Expanded(child: Header(showBackButton: true)),
-                  Row(
-                    children: [
-                      SvgPicture.asset(
-                        themeColors.brickSvg,
-                        width: 38,
-                        height: 26,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '$brickCount개',
-                        style: FalletterTextStyle.body1,
-                      ),
-                    ],
+                  SvgPicture.asset(
+                    themeColors.brickSvg,
+                    width: 38,
+                    height: 26,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "$brickCount개",
+                    style: FalletterTextStyle.body1,
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 32,
-              ),
-              Container(
-                width: 160,
-                height: 160,
-                decoration: const BoxDecoration(
-                  color: FalletterColor.middleBlack,
-                  shape: BoxShape.circle,
+            ),
+
+            // ⭕ Header 아래만 padding 20으로 감싸기
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 32),
+                    Container(
+                      width: 160,
+                      height: 160,
+                      decoration: const BoxDecoration(
+                        color: FalletterColor.middleBlack,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          emoji,
+                          style: const TextStyle(fontSize: 90),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      title,
+                      style: FalletterTextStyle.title2,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+
+                    nameOptionsGrid,
+                    const Spacer(),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: CustomElevatedButton(
+                        onPressed: isButtonEnabled
+                            ? () => _hintConfirmModal(context, ref, themeColors)
+                            : null,
+                        gradient: themeColors.button,
+                        child: const Text('브릭 사용으로 힌트 얻기'),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Center(
-                  child: Text(
-                    emoji,
-                    style: const TextStyle(fontSize: 90),
-                  ),
-                ),
               ),
-              const SizedBox(height: 32),
-              Text(
-                title,
-                style: FalletterTextStyle.title2,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              nameOptionsGrid,
-              const Spacer(),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: CustomElevatedButton(
-                  onPressed:
-                      isButtonEnabled
-                          ? () => _hintConfirmModal(context, ref, themeColors)
-                          : null,
-                  gradient: themeColors.button,
-                  child: const Text('브릭 사용으로 힌트 얻기'),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

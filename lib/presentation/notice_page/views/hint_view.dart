@@ -21,104 +21,102 @@ class HintView extends ConsumerWidget {
     final hintStage = ref.watch(hintProvider);
 
     final brickCount = itemCounts['brick'] ?? 0;
-
     final bool isButtonEnabled = brickCount > 0 && hintStage < 3;
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          children: [
+            // ⛔ Header는 padding 없이 맨 위
+            Header(
+              showBackButton: true,
+              rightWidget: Row(
                 children: [
-                  const Expanded(child: Header(showBackButton: true)),
-                  Row(
-                    children: [
-                      SvgPicture.asset(
-                        themeColors.brickSvg,
-                        width: 38,
-                        height: 26,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '$brickCount개',
-                        style: FalletterTextStyle.body1,
-                      ),
-                    ],
+                  SvgPicture.asset(
+                    themeColors.brickSvg,
+                    width: 38,
+                    height: 26,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '$brickCount개',
+                    style: FalletterTextStyle.body1,
                   ),
                 ],
               ),
-              Column(
-                children: [
-                  const SizedBox(height: 69,),
-                  Text('브릭 사용으로 얻은 힌트', style: FalletterTextStyle.title2),
-                  Text(
-                    '선택한 사람의 이름에 들어가는 초성입니다.',
-                    style: FalletterTextStyle.body3.copyWith(
-                      color: FalletterColor.gray400,
+            ),
+
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 69),
+                    Text('브릭 사용으로 얻은 힌트', style: FalletterTextStyle.title2),
+                    Text(
+                      '선택한 사람의 이름에 들어가는 초성입니다.',
+                      style: FalletterTextStyle.body3.copyWith(
+                        color: FalletterColor.gray400,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: const BoxDecoration(
-                      color: FalletterColor.middleBlack,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: ShaderMask(
-                        shaderCallback: (bounds) {
-                          return themeColors.primaryGradient.createShader(
-                            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                          );
-                        },
-                        blendMode: BlendMode.srcIn,
-                        child: Text(
-                          'ㅎ',
-                          style: FalletterTextStyle.title1.copyWith(
-                            fontSize: 90,
-                            color: FalletterColor.white,
+                    const SizedBox(height: 32),
+
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: const BoxDecoration(
+                        color: FalletterColor.middleBlack,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: ShaderMask(
+                          shaderCallback: (bounds) {
+                            return themeColors.primaryGradient
+                                .createShader(bounds);
+                          },
+                          blendMode: BlendMode.srcIn,
+                          child: Text(
+                            'ㅎ',
+                            style: FalletterTextStyle.title1.copyWith(
+                              fontSize: 90,
+                              color: FalletterColor.white,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Column(
-                children: [
-                  Text(
-                    '더 궁금하다면?',
-                    style: FalletterTextStyle.subTitle2,
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: CustomElevatedButton(
-                      onPressed:
-                          isButtonEnabled
-                              ? () {
-                                ref.read(hintProvider.notifier).state++;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const HintView(),
-                                  ),
-                                );
-                              }
-                              : null,
-                      gradient: themeColors.button,
-                      child: const Text('브릭 사용으로 힌트 얻기'),
+
+                    const Spacer(),
+
+                    Text(
+                      '더 궁금하다면?',
+                      style: FalletterTextStyle.subTitle2,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: CustomElevatedButton(
+                        onPressed: isButtonEnabled
+                            ? () {
+                          ref.read(hintProvider.notifier).state++;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HintView(),
+                            ),
+                          );
+                        }
+                            : null,
+                        gradient: themeColors.button,
+                        child: const Text('브릭 사용으로 힌트 얻기'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
