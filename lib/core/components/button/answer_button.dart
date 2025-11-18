@@ -34,7 +34,7 @@ class AnswerButton extends ConsumerWidget {
               FalletterColor.middleBlack,
               FalletterColor.middleBlack,
             ]);
-    final hasBorder = showBorder && isSelected;
+    final hasBorder = showBorder;
     final textColor = isSelected ? FalletterColor.black : FalletterColor.white;
 
     return Container(
