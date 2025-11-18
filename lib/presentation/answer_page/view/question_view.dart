@@ -5,6 +5,7 @@ import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/components/header/progress_indicator.dart';
 import 'package:falletter/core/providers/question_providers.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 class QuestionView extends ConsumerWidget {
   final VoidCallback onNext;
@@ -21,7 +22,6 @@ class QuestionView extends ConsumerWidget {
     final selectedIndex = ref.watch(selectedIndexProvider);
     final selectedQuestions = ref.watch(selectedQuestionsProvider);
     final options = ref.watch(currentQuestionOptionsProvider);
-    final submitAnswer = ref.read(submitAnswerProvider);
 
     if (selectedQuestions.isEmpty || currentIndex >= selectedQuestions.length) {
       return const Center(
@@ -37,25 +37,20 @@ class QuestionView extends ConsumerWidget {
       if (index >= options.length) return;
 
       final selectedStudent = options[index];
-
       ref.read(selectedIndexProvider.notifier).state = index;
 
       if (selectedStudent.id > 0) {
-        try {
-          print('=== Submitting: questionId=${question.id}, targetUserId=${selectedStudent.id}');
-          await submitAnswer(question.id, selectedStudent.id);
-          print('=== Submit success');
-        } catch (e) {
-          print('=== Submit answer error: $e');
-        }
-      } else {
-        print('=== Skipping "유저" submission');
+        await ref
+            .read(submitAnswerProvider.notifier)
+            .submitAnswer(
+              question.id,
+              selectedStudent.id,
+            );
       }
 
-      Future.delayed(const Duration(milliseconds: 200), () {
-        ref.read(selectedIndexProvider.notifier).state = null;
-        onNext();
-      });
+      await Future.delayed(const Duration(milliseconds: 200));
+      ref.read(selectedIndexProvider.notifier).state = null;
+      onNext();
     }
 
     void handleSkip() {
@@ -93,53 +88,63 @@ class QuestionView extends ConsumerWidget {
         const SizedBox(height: 32),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: options.isEmpty
-              ? const Center(
-            child: CircularProgressIndicator(
-              color: FalletterColor.white,
-            ),
-          )
-              : Column(
-            children: [
-              for (int i = 0; i < 2; i++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
+          child:
+              options.isEmpty
+                  ? const Center(
+                    child: CircularProgressIndicator(
+                      color: FalletterColor.white,
+                    ),
+                  )
+                  : Column(
                     children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: AnswerButton(
-                            label: options[i * 2].name,
-                            isSelected: selectedIndex == i * 2,
-                            onPressed: () => handleAnswer(i * 2),
+                      for (int i = 0; i < 2; i++)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: AnswerButton(
+                                    label: options[i * 2].name,
+                                    isSelected: selectedIndex == i * 2,
+                                    onPressed: () => handleAnswer(i * 2),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 6),
+                                  child: AnswerButton(
+                                    label: options[i * 2 + 1].name,
+                                    isSelected: selectedIndex == i * 2 + 1,
+                                    onPressed: () => handleAnswer(i * 2 + 1),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 6),
-                          child: AnswerButton(
-                            label: options[i * 2 + 1].name,
-                            isSelected: selectedIndex == i * 2 + 1,
-                            onPressed: () => handleAnswer(i * 2 + 1),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
-                ),
-            ],
-          ),
         ),
         const SizedBox(height: 32),
         TextButton(
           onPressed: handleSkip,
-          child: Text(
-            '건너뛰기',
-            style: FalletterTextStyle.body3.copyWith(
-              color: FalletterColor.gray300,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '건너뛰기',
+                style: FalletterTextStyle.body3.copyWith(
+                  color: FalletterColor.gray300,
+                ),
+              ),
+              const Icon(
+                Symbols.keyboard_double_arrow_right,
+                color: FalletterColor.gray300,
+              ),
+            ],
           ),
         ),
       ],

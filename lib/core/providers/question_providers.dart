@@ -114,16 +114,27 @@ final currentQuestionOptionsProvider = Provider<List<StudentModel>>((ref) {
   );
 });
 
-final submitAnswerProvider = Provider<Future<void> Function(int questionId, int targetUserId)>((ref) {
-  return (questionId, targetUserId) async {
-    final service = ref.read(questionServiceProvider);
+final submitAnswerProvider = StateNotifierProvider<SubmitAnswerNotifier, AsyncValue<void>>((ref) {
+  return SubmitAnswerNotifier(ref);
+});
+
+class SubmitAnswerNotifier extends StateNotifier<AsyncValue<void>> {
+  final Ref ref;
+
+  SubmitAnswerNotifier(this.ref) : super(const AsyncValue.data(null));
+
+  Future<void> submitAnswer(int questionId, int targetUserId) async {
+    state = const AsyncValue.loading();
+
     try {
+      final service = ref.read(questionServiceProvider);
       await service.submitSelectedStudent(
         questionId: questionId,
         targetUserId: targetUserId,
       );
-    } catch (e) {
-      rethrow;
+      state = const AsyncValue.data(null);
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
     }
-  };
-});
+  }
+}

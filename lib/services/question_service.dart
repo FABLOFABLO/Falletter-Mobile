@@ -42,7 +42,7 @@ class QuestionService {
     required int targetUserId,
   }) async {
     final response = await _dio.post(
-      ApiEndPoints.brickUsed,
+      ApiEndPoints.answerChoose,
       data: {
         'question_id': questionId,
         'target_user': targetUserId,
@@ -58,7 +58,7 @@ class QuestionService {
       case 401:
         throw Exception('Unauthorized 인증 실패');
       case 404:
-        throw Exception('Not Found 브릭 사용 내역을 찾을 수 없음');
+        throw Exception('Not Found 유저를 찾을 수 없음');
       case 500:
         throw Exception('Internal Server Error');
       default:
