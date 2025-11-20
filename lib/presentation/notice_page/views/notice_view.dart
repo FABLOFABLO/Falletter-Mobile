@@ -94,10 +94,15 @@ class _NoticePageState extends ConsumerState<NoticePage> {
                                 builder: (_) => NoticeDetailView(
                                   title: item.question,
                                   emoji: item.emoji,
-                                  schoolNumber: item.schoolNumber,
+                                  targetUserId: item.targetUserId,
+                                  name: item.name,
+                                  /*schoolNumber: item.schoolNumber,
                                   gender: item.gender,
                                   createdAt: localTime,
-                                  targetUserId: item.targetUserId,
+                                  */
+                                  /*questionText: item.question,
+                                  writerUserId: item.writerUserId,
+                                  questionId: item.questionId,*/
                                 ),
                               ),
                             );

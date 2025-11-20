@@ -37,7 +37,7 @@ class ChosenAnswerModel {
       questionId: json["question_id"],
       targetUserId: json["target_user_id"],
       writerUserId: json["writer_user_id"],
-      name: json['name'],
+      name: json["name"],
       createdAt: parseServerTime(json["created_at"]),
     );
   }

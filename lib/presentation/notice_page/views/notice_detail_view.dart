@@ -1,26 +1,39 @@
 import 'dart:math';
 import 'dart:ui';
+import 'package:falletter/core/providers/item_count_provider.dart'
+    hide hintProvider;
+import 'package:falletter/core/providers/theme_provider.dart';
+import 'package:falletter/core/providers/hint_provider.dart';
+import 'package:falletter/presentation/notice_page/views/hint_view.dart'
+    hide itemCountProvider;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:falletter/core/components/button/answer_button.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/core/providers/hint_provider.dart';
-import 'package:falletter/core/providers/theme_provider.dart';
-import 'package:falletter/core/providers/item_count_provider.dart';
-import 'package:falletter/core/providers/user_provider.dart';
-import 'package:falletter/core/providers/question_providers.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
-import 'package:falletter/models/student_model.dart';
-import 'package:falletter/presentation/notice_page/views/hint_view.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void _hintConfirmModal(
+class StudentModel {
+  final int id;
+  final String name;
+  final String schoolNumber;
+
+  StudentModel({
+    required this.id,
+    required this.name,
+    required this.schoolNumber,
+  });
+}
+
+void hintConfirmModal(
   BuildContext context,
   WidgetRef ref,
   ThemeColors themeColors,
+  String title,
+  String name,
 ) {
   showGeneralDialog(
     context: context,
@@ -87,25 +100,30 @@ void _hintConfirmModal(
                     child: CustomElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       gradient: FalletterGradient.horizontal([
-                        FalletterColor.gray200,
-                        FalletterColor.gray200,
+                        FalletterColor.gray700,
+                        FalletterColor.gray700,
                       ]),
-                      child: const Text('취소'),
+                      child: Text(
+                        '취소',
+                        style: FalletterTextStyle.body1.copyWith(
+                          color: FalletterColor.gray500,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: CustomElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        ref.read(itemCountProvider.notifier).decrement('brick');
                         ref.read(hintProvider.notifier).state++;
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const HintView(),
-                            ),
-                          );
-                        });
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HintView(name: name),
+                          ),
+                        );
                       },
                       gradient: themeColors.primaryGradient,
                       child: const Text('힌트보기'),
@@ -125,35 +143,27 @@ class NoticeDetailView extends ConsumerWidget {
   final int targetUserId;
   final String title;
   final String emoji;
-  final String schoolNumber;
-  final String gender;
-  final DateTime createdAt;
+  final String name;
 
   const NoticeDetailView({
     super.key,
     required this.targetUserId,
     required this.title,
     required this.emoji,
-    required this.schoolNumber,
-    required this.gender,
-    required this.createdAt,
+    required this.name,
   });
 
   Widget _buildNameButton(
-    WidgetRef ref,
     ThemeColors themeColors,
     StudentModel student,
-    int myId,
+    bool isMe,
   ) {
-    final isMe = student.id == myId;
-    final showBorder = isMe;
-
     final button = AnswerButton(
       label: student.name,
       onPressed: () {},
       isSelected: false,
-      showBorder: showBorder,
-      borderGradient: showBorder ? themeColors.primaryGradient : null,
+      showBorder: isMe,
+      borderGradient: isMe ? themeColors.primaryGradient : null,
     );
 
     if (isMe) return button;
@@ -180,111 +190,37 @@ class NoticeDetailView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     final themeColors = appThemeColors[theme]!;
-    final hintStage = ref.watch(hintProvider);
+
     final itemCounts = ref.watch(itemCountProvider);
-    final myUser = ref.watch(currentUserInfoProvider);
-    final allStudentsAsync = ref.watch(allStudentsProvider);
-
-    if (myUser == null) {
-      return const Scaffold(
-        backgroundColor: FalletterColor.black,
-        body: Center(
-          child: CircularProgressIndicator(color: FalletterColor.white),
-        ),
-      );
-    }
-
+    final hintStage = ref.watch(hintProvider);
     final brickCount = itemCounts['brick'] ?? 0;
-    final bool isButtonEnabled = brickCount > 0 && hintStage < 3;
 
-    final Widget nameOptionsGrid = allStudentsAsync.when(
-      data: (allStudents) {
-        final List<StudentModel> options = [myUser];
-        final otherStudents =
-            allStudents.where((s) => s.id != myUser.id).toList();
-        final random = Random();
+    final bool canGetNextHint = hintStage < 3 && brickCount > 0;
 
-        const requiredOthersCount = 3;
+    final myStudent = StudentModel(id: 1, name: "나", schoolNumber: "001");
+    final allStudents = [
+      myStudent,
+      StudentModel(id: 2, name: "학생1", schoolNumber: "002"),
+      StudentModel(id: 3, name: "학생2", schoolNumber: "003"),
+      StudentModel(id: 4, name: "학생3", schoolNumber: "004"),
+    ];
 
-        final List<StudentModel> selectedOthers = [];
-        if (otherStudents.isNotEmpty) {
-          final shuffledOthers = [...otherStudents];
-          shuffledOthers.shuffle(random);
-          selectedOthers.addAll(shuffledOthers.take(requiredOthersCount));
-        }
-
-        while (selectedOthers.length < requiredOthersCount) {
-          selectedOthers.add(
-            StudentModel(
-              id: -(selectedOthers.length + 1),
-              name: '유저',
-              schoolNumber: '',
-            ),
-          );
-        }
-
-        options.addAll(selectedOthers);
-        options.shuffle(random);
-
-        return SizedBox(
-          width: double.infinity,
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 2.5,
-            ),
-            itemCount: 4,
-            itemBuilder: (context, index) {
-              final student = options[index];
-              return _buildNameButton(ref, themeColors, student, myUser.id);
-            },
-          ),
-        );
-      },
-      loading:
-          () => const Center(
-            child: SizedBox(
-              height: 80,
-              child: CircularProgressIndicator(color: FalletterColor.white),
-            ),
-          ),
-      error:
-          (e, s) => const Center(
-            child: Text(
-              "학생 목록을 불러올 수 없습니다.",
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-    );
+    final options = [...allStudents]..shuffle(Random());
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // ⛔ Header는 padding 없음
             Header(
               showBackButton: true,
               rightWidget: Row(
                 children: [
-                  SvgPicture.asset(
-                    themeColors.brickSvg,
-                    width: 38,
-                    height: 26,
-                  ),
+                  SvgPicture.asset(themeColors.brickSvg, width: 38, height: 26),
                   const SizedBox(width: 12),
-                  Text(
-                    "$brickCount개",
-                    style: FalletterTextStyle.body1,
-                  ),
+                  Text("$brickCount개", style: FalletterTextStyle.body1),
                 ],
               ),
             ),
-
-            // ⭕ Header 아래만 padding 20으로 감싸기
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -312,20 +248,88 @@ class NoticeDetailView extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 32),
-
-                    nameOptionsGrid,
+                    SizedBox(
+                      width: double.infinity,
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 2.5,
+                            ),
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final student = options[index];
+                          final isMe = student.id == myStudent.id;
+                          return _buildNameButton(themeColors, student, isMe);
+                        },
+                      ),
+                    ),
                     const Spacer(),
-
                     SizedBox(
                       width: double.infinity,
                       child: CustomElevatedButton(
-                        onPressed: isButtonEnabled
-                            ? () => _hintConfirmModal(context, ref, themeColors)
-                            : null,
-                        gradient: themeColors.button,
-                        child: const Text('브릭 사용으로 힌트 얻기'),
+                        onPressed:
+                            canGetNextHint
+                                ? () => hintConfirmModal(
+                                  context,
+                                  ref,
+                                  themeColors,
+                                  title,
+                                  name,
+                                )
+                                : null,
+                        gradient:
+                            canGetNextHint
+                                ? themeColors.primaryGradient
+                                : FalletterGradient.horizontal([
+                                  FalletterColor.gray700,
+                                  FalletterColor.gray700,
+                                ]),
+                        child: Text(
+                          hintStage == 0
+                              ? '브릭 사용으로 첫 힌트 얻기'
+                              : hintStage < 3
+                              ? '브릭 사용으로 다음 힌트 얻기'
+                              : '모든 힌트 확인 완료',
+                          style: FalletterTextStyle.body1.copyWith(
+                            color:
+                                canGetNextHint
+                                    ? FalletterColor.black
+                                    : FalletterColor.gray500,
+                          ),
+                        ),
                       ),
                     ),
+
+                    if (hintStage > 0)
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => HintView(
+                                      name: name,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            '힌트 확인하기',
+                            style: FalletterTextStyle.body3.copyWith(
+                              color: FalletterColor.gray400,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
