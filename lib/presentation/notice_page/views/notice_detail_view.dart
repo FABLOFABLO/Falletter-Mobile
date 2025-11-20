@@ -291,7 +291,7 @@ class NoticeDetailView extends ConsumerWidget {
                                 ]),
                         child: Text(
                           hintStage == 0
-                              ? '브릭 사용으로 첫 힌트 얻기'
+                              ? '브릭 사용으로 힌트 얻기'
                               : hintStage < 3
                               ? '브릭 사용으로 다음 힌트 얻기'
                               : '모든 힌트 확인 완료',
