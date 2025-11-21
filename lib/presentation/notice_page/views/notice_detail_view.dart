@@ -116,7 +116,12 @@ void hintConfirmModal(
                     child: CustomElevatedButton(
                       onPressed: () {
                         ref.read(itemCountProvider.notifier).decrement('brick');
+
+                        // 2) 힌트 단계 증가
                         ref.read(hintProvider.notifier).state++;
+
+                        // 3) 서버 브릭 감소(-1)
+                        ref.read(brickUpdateProvider(-1));
                         Navigator.of(context).pop();
                         Navigator.push(
                           context,
@@ -290,7 +295,9 @@ class NoticeDetailView extends ConsumerWidget {
                                   FalletterColor.gray700,
                                 ]),
                         child: Text(
-                          hintStage == 0
+                          brickCount == 0
+                              ? '브릭이 부족합니다'
+                              : hintStage == 0
                               ? '브릭 사용으로 힌트 얻기'
                               : hintStage < 3
                               ? '브릭 사용으로 다음 힌트 얻기'
@@ -304,32 +311,6 @@ class NoticeDetailView extends ConsumerWidget {
                         ),
                       ),
                     ),
-
-                    if (hintStage > 0)
-                      SizedBox(
-                        width: double.infinity,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (_) => HintView(
-                                      name: name,
-                                    ),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            '힌트 확인하기',
-                            style: FalletterTextStyle.body3.copyWith(
-                              color: FalletterColor.gray400,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
                   ],
                 ),
               ),

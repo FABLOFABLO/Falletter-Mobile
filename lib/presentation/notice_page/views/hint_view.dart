@@ -182,10 +182,13 @@ class HintView extends ConsumerWidget {
                           onPressed:
                               isButtonEnabled
                                   ? () {
-                                    ref
-                                        .read(itemCountProvider.notifier)
-                                        .decrement('brick');
-                                    ref.read(hintProvider.notifier).state++;
+                                ref.read(itemCountProvider.notifier).decrement('brick');
+
+                                // 2) 힌트 단계 업
+                                ref.read(hintProvider.notifier).state++;
+
+                                // 3) 서버에서도 브릭 -1
+                                ref.read(brickUpdateProvider(-1));
                                   }
                                   : null,
                           gradient:
