@@ -33,7 +33,6 @@ class ItemCountNotifier extends StateNotifier<Map<String, int>> {
     };
   }
 
-  // 💡 [추가] 서버에서 가져온 브릭 개수로 초기 상태를 설정하는 함수
   void initializeBrickCount(int brickCount) {
     state = {...state, 'brick': brickCount};
   }
@@ -58,19 +57,16 @@ final brickServiceProvider = Provider<BrickHistoryService>((ref) {
   return BrickHistoryService(accessToken!);
 });
 
-// 💡 [추가] 서버에서 브릭 개수를 가져오는 FutureProvider
 final brickCountFutureProvider = FutureProvider<int>((ref) async {
   final service = ref.watch(brickServiceProvider);
   return service.fetchBrickCount();
 });
 
-
-// 💡 [수정] 서버 업데이트 성공 후, brickCountFutureProvider를 무효화하여 UI 동기화
 final brickUpdateProvider =
 FutureProvider.family<void, int>((ref, brickDelta) async {
   final service = ref.watch(brickServiceProvider);
   await service.updateBrickCount(brickUpdate: brickDelta);
-  ref.invalidate(brickCountFutureProvider); // 💡 서버 성공 시 브릭 개수 새로고침
+  ref.invalidate(brickCountFutureProvider);
 });
 
 final brickHistorySaveProvider =

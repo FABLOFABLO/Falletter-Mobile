@@ -23,7 +23,7 @@ class ApiEndPoints {
   static const letterCount = "/item/letter/count";
   static const letterUpdate = "/item/letter/update";
   static const brickCount = "/item/brick/count";
-  static const brickUpdate = "/item/brick/update"; // 아직
+  static const brickUpdate = "/item/brick/update";
 
   /// Letter
   static const letterSent = "/letter/sent";
