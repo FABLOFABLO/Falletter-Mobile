@@ -29,11 +29,10 @@ class BrickHistoryBox extends ConsumerWidget {
     final Gradient textGradient = themeColors.text;
     final Color amountColor = FalletterColor.error;
 
-    // ✨ question 유무에 따라 높이 동적 결정
     final double boxHeight = question != null ? 93 : 80;
 
     return ReusableLetterBox(
-      height: boxHeight, // 동적으로 결정된 높이 사용
+      height: boxHeight,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

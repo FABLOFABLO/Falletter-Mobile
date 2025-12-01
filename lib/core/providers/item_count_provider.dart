@@ -15,7 +15,6 @@ class ItemCountNotifier extends StateNotifier<Map<String, int>> {
   void setItemCount(String itemName, int count) {
     state = {...state, itemName: count};
   }
-
   void increment(String itemName) {
     final current = state[itemName] ?? 0;
     state = {...state, itemName: current + 1};
