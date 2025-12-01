@@ -4,6 +4,7 @@ import 'package:falletter/core/providers/item_count_provider.dart'
     hide hintProvider;
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/hint_provider.dart';
+import 'package:falletter/models/student_model.dart';
 import 'package:falletter/presentation/notice_page/views/hint_view.dart'
     hide itemCountProvider;
 import 'package:flutter/material.dart';
@@ -15,18 +16,6 @@ import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
-
-class StudentModel {
-  final int id;
-  final String name;
-  final String schoolNumber;
-
-  StudentModel({
-    required this.id,
-    required this.name,
-    required this.schoolNumber,
-  });
-}
 
 void hintConfirmModal(
   BuildContext context,
