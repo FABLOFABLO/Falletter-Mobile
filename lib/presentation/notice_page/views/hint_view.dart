@@ -2,7 +2,8 @@ import 'package:falletter/core/components/button/elevated_button.dart';
 import 'package:falletter/core/components/header/header.dart';
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/constants/text_style.dart';
-import 'package:falletter/core/providers/item_count_provider.dart' hide hintProvider;
+import 'package:falletter/core/providers/item_count_provider.dart'
+    hide hintProvider;
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/hint_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
@@ -13,8 +14,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class HintView extends ConsumerWidget {
   final String name;
+  final String questionId;
 
-  const HintView({super.key, required this.name});
+  const HintView({
+    super.key,
+    required this.name,
+    required this.questionId,
+  });
 
   String _getHintTitle(int stage) {
     switch (stage) {
@@ -29,12 +35,15 @@ class HintView extends ConsumerWidget {
     }
   }
 
-  Widget _buildConsonantsByStage(ThemeColors themeColors, int currentStage) {
-    final decomposed = decomposeKorean(name);
-    final randomized = [...decomposed]..shuffle();
-    final int displayCount = currentStage;
+  Widget _buildConsonantsByStage(
+    ThemeColors themeColors,
+    int currentStage,
+    List<String> randomizedConsonants,
+  ) {
     const double size = 100;
     const double hintSize = 90;
+
+    final displayConsonants = randomizedConsonants.take(currentStage).toList();
 
     if (currentStage == 1) {
       return Container(
@@ -50,7 +59,7 @@ class HintView extends ConsumerWidget {
               (bounds) => themeColors.primaryGradient.createShader(bounds),
           blendMode: BlendMode.srcIn,
           child: Text(
-            decomposed.isNotEmpty ? decomposed[0] : '',
+            displayConsonants.isNotEmpty ? displayConsonants[0] : '',
             style: FalletterTextStyle.title1.copyWith(
               fontSize: hintSize,
               color: FalletterColor.white,
@@ -64,16 +73,14 @@ class HintView extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
-        displayCount > decomposed.length ? decomposed.length : displayCount,
+        displayConsonants.length,
         (index) {
-          final bool isPaddingRequired = index < displayCount - 1;
-          final String char = randomized[index];
-
-          final bool useGradient =
-              (currentStage >= 3) || (index == currentStage - 1);
+          final bool isPaddingRequired = index < displayConsonants.length - 1;
+          final String char = displayConsonants[index];
+          final bool isNewHint = index == displayConsonants.length - 1;
 
           Widget content =
-              useGradient
+              isNewHint
                   ? ShaderMask(
                     shaderCallback:
                         (bounds) =>
@@ -92,7 +99,7 @@ class HintView extends ConsumerWidget {
                     char,
                     style: FalletterTextStyle.title1.copyWith(
                       fontSize: hintSize,
-                      color: FalletterColor.gray700,
+                      color: FalletterColor.gray500,
                       height: 1.0,
                     ),
                   );
@@ -125,6 +132,31 @@ class HintView extends ConsumerWidget {
     final itemCounts = ref.watch(itemCountProvider);
     final hintStage = ref.watch(hintProvider);
     final brickCount = itemCounts['brick'] ?? 0;
+
+    final randomizedConsonants = ref.watch(
+      randomizedConsonantsProvider(questionId),
+    );
+
+    if (randomizedConsonants.isEmpty) {
+      final decomposed = decomposeKorean(name);
+      final randomized = [...decomposed]..shuffle();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(randomizedConsonantsProvider(questionId).notifier).state =
+            randomized;
+      });
+
+      return const Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: CircularProgressIndicator(
+              color: FalletterColor.white,
+              backgroundColor: FalletterColor.middleBlack,
+            ),
+          ),
+        ),
+      );
+    }
 
     final bool isLastHint = hintStage >= 3;
     final bool isButtonEnabled = brickCount > 0 && !isLastHint;
@@ -167,7 +199,11 @@ class HintView extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    _buildConsonantsByStage(themeColors, hintStage),
+                    _buildConsonantsByStage(
+                      themeColors,
+                      hintStage,
+                      randomizedConsonants,
+                    ),
                     const Spacer(),
 
                     if (!isLastHint) ...[
@@ -181,10 +217,13 @@ class HintView extends ConsumerWidget {
                         child: CustomElevatedButton(
                           onPressed:
                               isButtonEnabled
-                                  ? () {
-                                ref.read(itemCountProvider.notifier).decrement('brick');
-                                ref.read(hintProvider.notifier).state++;
-                                ref.read(brickUpdateProvider(-1));
+                                  ? () async {
+                                    ref.read(hintProvider.notifier).state++;
+                                    await ref
+                                        .read(
+                                          brickUpdateNotifierProvider.notifier,
+                                        )
+                                        .updateBrick(-1);
                                   }
                                   : null,
                           gradient:

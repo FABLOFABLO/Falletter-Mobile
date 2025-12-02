@@ -4,6 +4,7 @@ import 'package:falletter/core/providers/item_count_provider.dart'
     hide hintProvider;
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/hint_provider.dart';
+import 'package:falletter/core/utils/name_utils.dart';
 import 'package:falletter/models/student_model.dart';
 import 'package:falletter/presentation/notice_page/views/hint_view.dart'
     hide itemCountProvider;
@@ -23,6 +24,7 @@ void hintConfirmModal(
   ThemeColors themeColors,
   String title,
   String name,
+  String questionId,
 ) {
   showGeneralDialog(
     context: context,
@@ -103,21 +105,26 @@ void hintConfirmModal(
                   const SizedBox(width: 16),
                   Expanded(
                     child: CustomElevatedButton(
-                      onPressed: () {
-                        ref.read(itemCountProvider.notifier).decrement('brick');
-
-                        // 2) 힌트 단계 증가
+                      onPressed: () async {
                         ref.read(hintProvider.notifier).state++;
 
-                        // 3) 서버 브릭 감소(-1)
-                        ref.read(brickUpdateProvider(-1));
-                        Navigator.of(context).pop();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HintView(name: name),
-                          ),
-                        );
+                        await ref
+                            .read(brickUpdateNotifierProvider.notifier)
+                            .updateBrick(-1);
+
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => HintView(
+                                    name: name,
+                                    questionId: questionId,
+                                  ),
+                            ),
+                          );
+                        }
                       },
                       gradient: themeColors.primaryGradient,
                       child: const Text('힌트보기'),
@@ -133,11 +140,12 @@ void hintConfirmModal(
   );
 }
 
-class NoticeDetailView extends ConsumerWidget {
+class NoticeDetailView extends ConsumerStatefulWidget {
   final int targetUserId;
   final String title;
   final String emoji;
   final String name;
+  final String questionId;
 
   const NoticeDetailView({
     super.key,
@@ -145,7 +153,32 @@ class NoticeDetailView extends ConsumerWidget {
     required this.title,
     required this.emoji,
     required this.name,
+    required this.questionId,
   });
+
+  @override
+  ConsumerState<NoticeDetailView> createState() => _NoticeDetailViewState();
+}
+
+class _NoticeDetailViewState extends ConsumerState<NoticeDetailView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final existing = ref.read(
+        randomizedConsonantsProvider(widget.questionId),
+      );
+      if (existing.isEmpty) {
+        final decomposed = decomposeKorean(widget.name);
+        final randomized = [...decomposed]..shuffle();
+        ref
+            .read(randomizedConsonantsProvider(widget.questionId).notifier)
+            .state = randomized;
+      }
+
+      ref.read(hintProvider.notifier).state = 0;
+    });
+  }
 
   Widget _buildNameButton(
     ThemeColors themeColors,
@@ -181,7 +214,7 @@ class NoticeDetailView extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final themeColors = appThemeColors[theme]!;
 
@@ -230,14 +263,14 @@ class NoticeDetailView extends ConsumerWidget {
                       ),
                       child: Center(
                         child: Text(
-                          emoji,
+                          widget.emoji,
                           style: const TextStyle(fontSize: 90),
                         ),
                       ),
                     ),
                     const SizedBox(height: 32),
                     Text(
-                      title,
+                      widget.title,
                       style: FalletterTextStyle.title2,
                       textAlign: TextAlign.center,
                     ),
@@ -272,8 +305,9 @@ class NoticeDetailView extends ConsumerWidget {
                                   context,
                                   ref,
                                   themeColors,
-                                  title,
-                                  name,
+                                  widget.title,
+                                  widget.name,
+                                  widget.questionId,
                                 )
                                 : null,
                         gradient:

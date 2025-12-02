@@ -91,19 +91,19 @@ class _NoticePageState extends ConsumerState<NoticePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => NoticeDetailView(
-                                  title: item.question,
-                                  emoji: item.emoji,
-                                  targetUserId: item.targetUserId,
-                                  name: item.name,
-                                  /*schoolNumber: item.schoolNumber,
+                                builder:
+                                    (_) => NoticeDetailView(
+                                      title: item.question,
+                                      emoji: item.emoji,
+                                      targetUserId: item.targetUserId,
+                                      questionId: item.questionId.toString(),
+                                      name: item.name,
+                                      /*schoolNumber: item.schoolNumber,
                                   gender: item.gender,
                                   createdAt: localTime,
-                                  */
-                                  /*questionText: item.question,
                                   writerUserId: item.writerUserId,
-                                  questionId: item.questionId,*/
-                                ),
+                                  */
+                                    ),
                               ),
                             );
                           },

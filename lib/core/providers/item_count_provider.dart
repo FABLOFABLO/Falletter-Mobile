@@ -5,9 +5,9 @@ import 'package:falletter/services/brick_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final itemCountProvider =
-StateNotifierProvider<ItemCountNotifier, Map<String, int>>(
+    StateNotifierProvider<ItemCountNotifier, Map<String, int>>(
       (ref) => ItemCountNotifier(),
-);
+    );
 
 class ItemCountNotifier extends StateNotifier<Map<String, int>> {
   ItemCountNotifier() : super({});
@@ -15,6 +15,7 @@ class ItemCountNotifier extends StateNotifier<Map<String, int>> {
   void setItemCount(String itemName, int count) {
     state = {...state, itemName: count};
   }
+
   void increment(String itemName) {
     final current = state[itemName] ?? 0;
     state = {...state, itemName: current + 1};
@@ -61,22 +62,61 @@ final brickCountFutureProvider = FutureProvider<int>((ref) async {
   return service.fetchBrickCount();
 });
 
-final brickUpdateProvider =
-FutureProvider.family<void, int>((ref, brickDelta) async {
-  final service = ref.watch(brickServiceProvider);
-  await service.updateBrickCount(brickUpdate: brickDelta);
-  ref.invalidate(brickCountFutureProvider);
-});
+class BrickUpdateNotifier extends StateNotifier<AsyncValue<void>> {
+  BrickUpdateNotifier(this.ref) : super(const AsyncValue.data(null));
 
-final brickHistorySaveProvider =
-FutureProvider.family<void, BrickHistoryModel>((ref, model) async {
-  final service = ref.watch(brickServiceProvider);
-  await service.createBrickHistory(model);
-});
+  final Ref ref;
 
-final brickHistoryProvider = FutureProvider<List<BrickHistoryResponseModel>>((ref) async {
+  Future<void> updateBrick(int delta) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final service = ref.read(brickServiceProvider);
+      await service.updateBrickCount(brickUpdate: delta);
+
+      ref.read(itemCountProvider.notifier).decrement('brick');
+      ref.invalidate(brickCountFutureProvider);
+
+      state = const AsyncValue.data(null);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
+}
+
+final brickUpdateNotifierProvider =
+    StateNotifierProvider<BrickUpdateNotifier, AsyncValue<void>>((ref) {
+      return BrickUpdateNotifier(ref);
+    });
+
+final brickHistorySaveProvider = FutureProvider.family<void, BrickHistoryModel>(
+  (ref, model) async {
+    final service = ref.watch(brickServiceProvider);
+    await service.createBrickHistory(model);
+  },
+);
+
+final brickHistoryProvider = FutureProvider<List<BrickHistoryResponseModel>>((
+  ref,
+) async {
   final service = ref.watch(brickServiceProvider);
   return service.fetchHistory();
 });
 
 final selectedHintsProvider = StateProvider<List<String>>((ref) => []);
+final randomizedConsonantsProvider = StateProvider.family<List<String>, String>(
+  (ref, questionId) => [],
+);
+
+void initializeHintsForQuestion(
+  WidgetRef ref,
+  String questionId,
+  String name,
+  Function decomposeKorean,
+) {
+  final decomposed = decomposeKorean(name) as List<String>;
+  final randomized = [...decomposed]..shuffle();
+  ref.read(randomizedConsonantsProvider(questionId).notifier).state =
+      randomized;
+}
