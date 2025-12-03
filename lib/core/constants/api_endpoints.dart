@@ -32,12 +32,12 @@ class ApiEndPoints {
   static const letterReceivedDetail = "/letter/received";
 
   /// history
-  static const brickSave = "/history/brick/save"; // 아직
+  static const brickSave = "/history/brick/save";
   static const brickUsed = "/history/brick/used"; // 아직
 
   /// Answer
   static const answerChoose = "/answer/choose";
-  static const answerChoosen = "/answer/chosen";
+  static const answerChosen = "/answer/chosen";
 
   /// Questions
   static const questions = "/question/all";

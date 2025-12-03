@@ -68,7 +68,7 @@ class QuestionService {
 
   Future<List<ChosenAnswerModel>> fetchChosenAnswers() async {
     final response = await _dio.get(
-      ApiEndPoints.answerChoosen,
+      ApiEndPoints.answerChosen,
       options: Options(
         headers: {
           'Authorization': 'Bearer $accessToken',
