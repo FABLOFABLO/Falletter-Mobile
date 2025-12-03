@@ -80,6 +80,8 @@ class BrickHistoryService {
       }
     } on DioException catch (e) {
       throw Exception("오류: ${e.response?.statusCode}");
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -92,42 +94,63 @@ class BrickHistoryService {
   }
 
   Future<List<BrickHistoryResponseModel>> fetchHistory() async {
-    print('[BrickHistoryService] 📡 fetchHistory() 실행됨');
-
     try {
+      final requestTime = DateTime.now();
       final response = await _dio.get(
         ApiEndPoints.brickUsed,
         options: Options(
           headers: {'Authorization': 'Bearer $accessToken'},
+          responseType: ResponseType.json,
         ),
       );
 
-      print('[BrickHistoryService] ✅ status: ${response.statusCode}');
-      print('[BrickHistoryService] ✅ response.data: ${response.data}');
-
+      final responseTime = DateTime.now();
+      final duration = responseTime.difference(requestTime);
       if (response.statusCode != 200) {
-        print('[BrickHistoryService] ❌ 200이 아님 → ${response.statusCode}');
-        throw Exception("오류 발생");
+        throw Exception("오류 발생: ${response.statusCode}");
+      }
+
+      if (response.data == null) {
+        return [];
+      }
+
+      if (response.data is! List) {
+        if (response.data is Map) {
+          final map = response.data as Map<String, dynamic>;
+
+          if (map.containsKey('data') && map['data'] is List) {
+            final dataList = map['data'] as List;
+            return _parseHistoryList(dataList);
+          }
+        }
+
+        throw Exception("예상하지 못한 응답 형식");
       }
 
       final data = response.data as List;
-      final list =
-          data.map((e) {
-            print('[BrickHistoryService] ▶ 파싱 중: $e');
-            return BrickHistoryResponseModel.fromJson(e);
-          }).toList();
+      if (data.isEmpty) {
+        return [];
+      }
 
-      print('[BrickHistoryService] 🎉 파싱 완료: 총 ${list.length}개');
-      return list;
+      return _parseHistoryList(data);
     } on DioException catch (e) {
-      print('[BrickHistoryService] ❌ DioException 발생');
-      print('[BrickHistoryService] ❌ status: ${e.response?.statusCode}');
-      print('[BrickHistoryService] ❌ data: ${e.response?.data}');
-
       if (e.response?.statusCode == 404) {
         return [];
       }
-      throw Exception("오류: ${e.response?.statusCode}");
+      throw Exception("오류: ${e.response?.statusCode ?? 'Network Error'}");
+    } catch (e, stackTrace) {
+      rethrow;
     }
+  }
+
+  List<BrickHistoryResponseModel> _parseHistoryList(List data) {
+    final list = <BrickHistoryResponseModel>[];
+    for (int i = 0; i < data.length; i++) {
+      try {
+        final model = BrickHistoryResponseModel.fromJson(data[i]);
+        list.add(model);
+      } catch (e, stackTrace) {}
+    }
+    return list;
   }
 }

@@ -57,7 +57,6 @@ class _NoticePageState extends ConsumerState<NoticePage> {
                   ],
                 ),
               ),
-
               Expanded(
                 child: answersAsync.when(
                   data: (answers) {
@@ -77,7 +76,6 @@ class _NoticePageState extends ConsumerState<NoticePage> {
                       itemBuilder: (context, index) {
                         final item = answers[index];
                         final isClicked = clickedIndexes.contains(index);
-
                         final localTime = item.createdAt.toLocal();
 
                         return NoticeBox(
@@ -98,11 +96,7 @@ class _NoticePageState extends ConsumerState<NoticePage> {
                                       targetUserId: item.targetUserId,
                                       questionId: item.questionId.toString(),
                                       name: item.name,
-                                      /*schoolNumber: item.schoolNumber,
-                                  gender: item.gender,
-                                  createdAt: localTime,
-                                  writerUserId: item.writerUserId,
-                                  */
+                                      writerUserId: item.writerUserId,
                                     ),
                               ),
                             );

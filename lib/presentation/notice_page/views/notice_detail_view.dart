@@ -5,6 +5,7 @@ import 'package:falletter/core/providers/item_count_provider.dart'
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/hint_provider.dart';
 import 'package:falletter/core/utils/name_utils.dart';
+import 'package:falletter/models/brick_history_model.dart';
 import 'package:falletter/models/student_model.dart';
 import 'package:falletter/presentation/notice_page/views/hint_view.dart'
     hide itemCountProvider;
@@ -25,6 +26,8 @@ void hintConfirmModal(
   String title,
   String name,
   String questionId,
+  int targetUserId,
+  int writerUserId,
 ) {
   showGeneralDialog(
     context: context,
@@ -108,9 +111,22 @@ void hintConfirmModal(
                       onPressed: () async {
                         ref.read(hintProvider.notifier).state++;
 
+                        final historyModel = BrickHistoryModel(
+                          title: '힌트 사용',
+                          description: '질문 응답',
+                          amount: -1,
+                          type: 'QUESTION',
+                          questionId: int.tryParse(questionId),
+                          targetUserId: writerUserId,
+                          writerUserId: targetUserId,
+                        );
+
                         await ref
                             .read(brickUpdateNotifierProvider.notifier)
-                            .updateBrick(-1);
+                            .updateBrickWithHistory(
+                              delta: -1,
+                              historyModel: historyModel,
+                            );
 
                         if (context.mounted) {
                           Navigator.of(context).pop();
@@ -121,6 +137,8 @@ void hintConfirmModal(
                                   (_) => HintView(
                                     name: name,
                                     questionId: questionId,
+                                    targetUserId: targetUserId,
+                                    writerUserId: writerUserId,
                                   ),
                             ),
                           );
@@ -146,6 +164,7 @@ class NoticeDetailView extends ConsumerStatefulWidget {
   final String emoji;
   final String name;
   final String questionId;
+  final int writerUserId;
 
   const NoticeDetailView({
     super.key,
@@ -154,6 +173,7 @@ class NoticeDetailView extends ConsumerStatefulWidget {
     required this.emoji,
     required this.name,
     required this.questionId,
+    required this.writerUserId,
   });
 
   @override
@@ -308,6 +328,8 @@ class _NoticeDetailViewState extends ConsumerState<NoticeDetailView> {
                                   widget.title,
                                   widget.name,
                                   widget.questionId,
+                                  widget.targetUserId,
+                                  widget.writerUserId,
                                 )
                                 : null,
                         gradient:

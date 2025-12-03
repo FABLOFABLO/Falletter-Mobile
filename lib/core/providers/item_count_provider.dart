@@ -67,6 +67,33 @@ class BrickUpdateNotifier extends StateNotifier<AsyncValue<void>> {
 
   final Ref ref;
 
+  Future<void> updateBrickWithHistory({
+    required int delta,
+    required BrickHistoryModel historyModel,
+  }) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final service = ref.read(brickServiceProvider);
+      await service.updateBrickCount(brickUpdate: delta);
+      await service.createBrickHistory(historyModel);
+      if (delta < 0) {
+        ref.read(itemCountProvider.notifier).decrement('brick');
+      } else {
+        ref.read(itemCountProvider.notifier).increment('brick');
+      }
+
+      ref.invalidate(brickCountFutureProvider);
+
+      ref.invalidate(brickHistoryProvider);
+
+      state = const AsyncValue.data(null);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> updateBrick(int delta) async {
     state = const AsyncValue.loading();
 
@@ -74,7 +101,12 @@ class BrickUpdateNotifier extends StateNotifier<AsyncValue<void>> {
       final service = ref.read(brickServiceProvider);
       await service.updateBrickCount(brickUpdate: delta);
 
-      ref.read(itemCountProvider.notifier).decrement('brick');
+      if (delta < 0) {
+        ref.read(itemCountProvider.notifier).decrement('brick');
+      } else {
+        ref.read(itemCountProvider.notifier).increment('brick');
+      }
+
       ref.invalidate(brickCountFutureProvider);
 
       state = const AsyncValue.data(null);
@@ -90,13 +122,6 @@ final brickUpdateNotifierProvider =
       return BrickUpdateNotifier(ref);
     });
 
-final brickHistorySaveProvider = FutureProvider.family<void, BrickHistoryModel>(
-  (ref, model) async {
-    final service = ref.watch(brickServiceProvider);
-    await service.createBrickHistory(model);
-  },
-);
-
 final brickHistoryProvider = FutureProvider<List<BrickHistoryResponseModel>>((
   ref,
 ) async {
@@ -105,6 +130,7 @@ final brickHistoryProvider = FutureProvider<List<BrickHistoryResponseModel>>((
 });
 
 final selectedHintsProvider = StateProvider<List<String>>((ref) => []);
+
 final randomizedConsonantsProvider = StateProvider.family<List<String>, String>(
   (ref, questionId) => [],
 );

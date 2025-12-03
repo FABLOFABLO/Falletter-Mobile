@@ -8,6 +8,7 @@ import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/providers/hint_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
 import 'package:falletter/core/utils/name_utils.dart';
+import 'package:falletter/models/brick_history_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,11 +16,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 class HintView extends ConsumerWidget {
   final String name;
   final String questionId;
+  final int targetUserId;
+  final int writerUserId;
 
   const HintView({
     super.key,
     required this.name,
     required this.questionId,
+    required this.targetUserId,
+    required this.writerUserId,
   });
 
   String _getHintTitle(int stage) {
@@ -205,7 +210,6 @@ class HintView extends ConsumerWidget {
                       randomizedConsonants,
                     ),
                     const Spacer(),
-
                     if (!isLastHint) ...[
                       Text(
                         '더 궁금하다면?',
@@ -219,11 +223,28 @@ class HintView extends ConsumerWidget {
                               isButtonEnabled
                                   ? () async {
                                     ref.read(hintProvider.notifier).state++;
-                                    await ref
-                                        .read(
-                                          brickUpdateNotifierProvider.notifier,
-                                        )
-                                        .updateBrick(-1);
+
+                                    final historyModel = BrickHistoryModel(
+                                      title: '힌트 사용',
+                                      description: '질문 응답',
+                                      amount: -1,
+                                      type: 'QUESTION',
+                                      questionId: int.tryParse(questionId),
+                                      targetUserId: writerUserId,
+                                      writerUserId: targetUserId,
+                                    );
+
+                                    try {
+                                      await ref
+                                          .read(
+                                            brickUpdateNotifierProvider
+                                                .notifier,
+                                          )
+                                          .updateBrickWithHistory(
+                                            delta: -1,
+                                            historyModel: historyModel,
+                                          );
+                                    } catch (e) {}
                                   }
                                   : null,
                           gradient:
