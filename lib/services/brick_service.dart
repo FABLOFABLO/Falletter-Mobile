@@ -95,7 +95,6 @@ class BrickHistoryService {
 
   Future<List<BrickHistoryResponseModel>> fetchHistory() async {
     try {
-      final requestTime = DateTime.now();
       final response = await _dio.get(
         ApiEndPoints.brickUsed,
         options: Options(
@@ -104,8 +103,6 @@ class BrickHistoryService {
         ),
       );
 
-      final responseTime = DateTime.now();
-      final duration = responseTime.difference(requestTime);
       if (response.statusCode != 200) {
         throw Exception("오류 발생: ${response.statusCode}");
       }
@@ -138,7 +135,7 @@ class BrickHistoryService {
         return [];
       }
       throw Exception("오류: ${e.response?.statusCode ?? 'Network Error'}");
-    } catch (e, stackTrace) {
+    } catch (e) {
       rethrow;
     }
   }
@@ -149,7 +146,9 @@ class BrickHistoryService {
       try {
         final model = BrickHistoryResponseModel.fromJson(data[i]);
         list.add(model);
-      } catch (e, stackTrace) {}
+      } catch (e) {
+        rethrow;
+      }
     }
     return list;
   }
