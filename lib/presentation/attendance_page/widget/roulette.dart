@@ -33,14 +33,14 @@ class _RouletteWheelState extends ConsumerState<RouletteWheel>
   int selectedIndex = 0;
 
   final List<Reward> rewards = const [
-    Reward(RewardType.brick, 1),
-    Reward(RewardType.letter, 1),
     Reward(RewardType.brick, 2),
     Reward(RewardType.letter, 2),
-    Reward(RewardType.brick, 2),
-    Reward(RewardType.letter, 1),
-    Reward(RewardType.letter, 2),
-    Reward(RewardType.brick, 1),
+    Reward(RewardType.brick, 3),
+    Reward(RewardType.letter, 3),
+    Reward(RewardType.brick, 4),
+    Reward(RewardType.letter, 4),
+    Reward(RewardType.letter, 5),
+    Reward(RewardType.brick, 5),
   ];
 
   @override

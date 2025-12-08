@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:falletter/core/providers/auth_token_provider.dart';
 import 'package:falletter/core/providers/signin_provider.dart';
-import 'package:falletter/presentation/main_app.dart';
+import 'package:falletter/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:falletter/core/components/button/elevated_button.dart';
@@ -79,9 +79,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           if (data != null && data['access_token'] != null) {
             ref.read(accessTokenProvider.notifier).state = data['access_token'];
 
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (_) => const MainApp()),
+              MaterialPageRoute(builder: (_) => const PostLoginPage()),
+                  (route) => false,
             );
           }
         },

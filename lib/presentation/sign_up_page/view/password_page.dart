@@ -1,3 +1,4 @@
+import 'package:falletter/initial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +12,6 @@ import 'package:falletter/core/constants/text_style.dart';
 import 'package:falletter/core/providers/signup_provider.dart';
 import 'package:falletter/core/providers/theme_provider.dart';
 import 'package:falletter/core/theme/theme_colors.dart';
-import 'package:falletter/presentation/main_app.dart';
 import 'package:falletter/services/auth_service.dart';
 
 class PasswordPage extends ConsumerStatefulWidget {
@@ -121,9 +121,10 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
     );
 
     if (mounted) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const MainApp()),
+        MaterialPageRoute(builder: (_) => const PostLoginPage()),
+            (route) => false,
       );
     }
   }

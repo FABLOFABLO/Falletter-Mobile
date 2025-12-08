@@ -1,7 +1,6 @@
 import 'package:falletter/core/constants/color.dart';
 import 'package:falletter/core/theme/falletter_theme.dart';
-import 'package:falletter/presentation/attendance_page/view/roulette_page.dart';
-import 'package:falletter/presentation/main_app.dart';
+import 'package:falletter/initial_page.dart';
 import 'package:falletter/presentation/splash/view/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,8 +25,7 @@ class MyApp extends StatelessWidget {
         inputDecorationTheme: inputDecorationTheme,
         textSelectionTheme: textSelectionTheme,
       ),
-      home: SplashPage()
-      // home: RoulettePage(),
+      home: InitialPage(),
     );
   }
 }
