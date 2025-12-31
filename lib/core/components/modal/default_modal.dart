@@ -39,7 +39,7 @@ class DefaultModal extends StatelessWidget {
                 color: FalletterColor.gray900,
               ),
             ),
-            const SizedBox(height: 20),
+            // const SizedBox(height: 4),
             Text(
               description,
               style: FalletterTextStyle.body3.copyWith(

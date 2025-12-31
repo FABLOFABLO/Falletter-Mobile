@@ -1,6 +1,8 @@
+import 'package:falletter/core/config/app_env.dart';
+
 class ApiEndPoints {
   /// BaseUrl
-  static const baseUrl = "http://3.34.76.83:8080";
+  static const baseUrl = AppEnv.baseUrl;
 
   /// User
   static const signUp = "/user/signup";
